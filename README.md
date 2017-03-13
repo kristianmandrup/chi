@@ -5,6 +5,7 @@ $ npm i
 $ npm run all
 ```
 This will tokenize the file `src/example.chi` and then parse and interpret it.
+
 **Please do not use chi in production yet. It's still highly experimental and will likely change a lot.**
 ## About chi
 Chi, in its current form, is a meant to be a dynamically-typed, imperative programming language featuring ideas from the functional programming paradigm. As such, it considers functions to be first-class and performs automatic currying. It uses static scope and supports Unicode tokens. A (potentially incomplete) showcase of features is listed in the next section.
