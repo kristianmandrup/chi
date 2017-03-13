@@ -34,8 +34,8 @@ export class BinaryOperator extends Operator {
 	}
 }
 export class UnaryOperator extends Operator {
-	constructor(operand) {
-		super();
+	constructor(location, operand) {
+		super(location);
 		this.operand = operand;
 	}
 }

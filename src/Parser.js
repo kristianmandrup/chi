@@ -8,6 +8,11 @@ import {
 	NumberLiteral,
 	PowerLiteral,
 	BooleanLiteral,
+	TrueLiteral,
+	FalseLiteral,
+	AndOperator,
+	OrOperator,
+	NotOperator,
 	Semicolon,
 	Plus,
 	AdditiveOperator,
@@ -26,8 +31,12 @@ import {
 } from "./Lexer";
 import {
 	Number,
-	Boolean,
+	True,
+	False,
 	Let as LetStatement,
+	And,
+	Or,
+	Not,
 	Id,
 	Block,
 	Add,
@@ -62,14 +71,14 @@ export default class ChiParser extends Parser {
 			return value;
 		});
 		this.RULE("Expression", () => {
-			const additive = this.SUBRULE(this.AdditiveExpression);
+			const and = this.SUBRULE(this.AndExpression);
 			const args = this.MANY(() => {
 				this.CONSUME(LeftParenthesis);
 				const args = this.OPTION2(() => {
-					const firstExpression = this.SUBRULE2(this.AdditiveExpression);
+					const firstExpression = this.SUBRULE2(this.AndExpression);
 					const restExpressions = this.MANY2(() => {
 						this.CONSUME(Comma);
-						return this.SUBRULE3(this.AdditiveExpression);
+						return this.SUBRULE3(this.AndExpression);
 					});
 					return [firstExpression, ...(restExpressions || [])];
 				});
@@ -77,11 +86,41 @@ export default class ChiParser extends Parser {
 				return args || [];
 			});
 			if (!args.length) {
-				return additive;
+				return and;
 			}
 			else {
-				return [additive, ...args].reduce((r1, r2) => {
+				return [and, ...args].reduce((r1, r2) => {
 					return new Apply(null, r1, r2);
+				});
+			}
+		});
+		this.RULE("AndExpression", () => {
+			const lhs = this.SUBRULE(this.OrExpression);
+			const rhs = this.MANY(() => {
+				this.CONSUME(AndOperator);
+				return this.SUBRULE2(this.OrExpression);
+			});
+			if (!rhs.length) {
+				return lhs;
+			}
+			else {
+				return [lhs, ...rhs].reduce((r1, r2) => {
+					return new And(null, r1, r2);
+				});
+			}
+		});
+		this.RULE("OrExpression", () => {
+			const lhs = this.SUBRULE(this.AdditiveExpression);
+			const rhs = this.MANY(() => {
+				this.CONSUME(OrOperator);
+				return this.SUBRULE2(this.AdditiveExpression);
+			});
+			if (!rhs.length) {
+				return lhs;
+			}
+			else {
+				return [lhs, ...rhs].reduce((r1, r2) => {
+					return new Or(null, r1, r2);
 				});
 			}
 		});
@@ -107,10 +146,10 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("MultiplicativeExpression", () => {
 			const operators = [];
-			const lhs = this.SUBRULE(this.PowerExpression);
+			const lhs = this.SUBRULE(this.NotExpression);
 			const rhs = this.MANY(() => {
 				operators.push(this.CONSUME(MultiplicativeOperator));
-				return this.SUBRULE2(this.PowerExpression);
+				return this.SUBRULE2(this.NotExpression);
 			});
 			return [lhs, ...rhs].reduce((r1, r2, i) => {
 				const operator = operators[i - 1];
@@ -124,6 +163,18 @@ export default class ChiParser extends Parser {
 					throw new Error("Multiplicative operator must be plus or minus");
 				}
 			});
+		});
+		this.RULE("NotExpression", () => {
+			const operand = this.OPTION(() => {
+				this.CONSUME(NotOperator);
+				return this.SUBRULE(this.PowerExpression)
+			});
+			if (!operand) {
+				return this.SUBRULE2(this.PowerExpression);
+			}
+			else {
+				return new Not(null, operand);
+			}
 		});
 		this.RULE("PowerExpression", () => {
 			const base = this.SUBRULE(this.TermExpression);
@@ -182,7 +233,15 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("BooleanLiteral", () => {
 			const boolean = this.CONSUME(BooleanLiteral);
-			return new Boolean(boolean.meta.location, boolean.image);
+			if (boolean instanceof TrueLiteral) {
+				return new True(boolean.meta.location, boolean.image);
+			}
+			else if (boolean instanceof FalseLiteral) {
+				return new False(boolean.meta.location, boolean.image);
+			}
+			else {
+				throw new Error(`Boolean literal should be "true" or "false"`);
+			}
 		});
 		this.RULE("FunctionLiteral", () => {
 			const identifiers = this.OR([{
@@ -197,11 +256,6 @@ export default class ChiParser extends Parser {
 						});
 						return [firstID, ...restIDs];
 					});
-					/* ↑ Comment out this definition of `ids` ↑ */
-					/* ↓ …and then comment in the lower definition of `ids` */
-// 					const ids = this.MANY_SEP(Comma, () => {
-// 						return this.SUBRULE(this.Identifier);
-// 					});
 					this.CONSUME(RightParenthesis);
 					return ids || [];
 				}

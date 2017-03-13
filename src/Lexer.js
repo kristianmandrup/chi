@@ -45,6 +45,15 @@ export class Asterisk extends MultiplicativeOperator {
 export class Slash extends MultiplicativeOperator {
 	static PATTERN = /\//;
 }
+export class AndOperator extends MetaToken {
+	static PATTERN = /&&|∧/;
+}
+export class OrOperator extends MetaToken {
+	static PATTERN = /\|\||∨/;
+}
+export class NotOperator extends MetaToken {
+	static PATTERN = /¬|!/;
+}
 export class PowerLiteral extends MetaToken {
 	static PATTERN = /[⁰¹²³⁴⁵⁶⁷⁸⁹]+/;
 }
@@ -120,6 +129,9 @@ export const allTokens = [
 	RightBracket,
 	Literal,
 	BooleanLiteral,
+	AndOperator,
+	OrOperator,
+	NotOperator,
 	TrueLiteral,
 	FalseLiteral,
 	NumberLiteral,

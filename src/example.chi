@@ -1,3 +1,3 @@
-let f = (x, y) => x² + y¹⁰;
-let g = x => f(10, x)
-g(1)
+let X = true;
+let Y = false;
+(¬X ∧ Y) ∨ Y

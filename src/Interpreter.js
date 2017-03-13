@@ -20,6 +20,16 @@ class Store extends Map {
 		return Store.location++;
 	}
 }
+function coerceBoolean(value) {
+	if (value instanceof Number) {
+		if (value.value === 0) {
+			return new False();
+		}
+		else {
+			return new True();
+		}
+	}
+}
 export default function interpret(expression, environment = new Environment(), store = new Store()) {
 	const π = (expression, env = environment, s = store) => interpret(expression, env, s);
 	if (expression instanceof Value) {
@@ -38,11 +48,17 @@ export default function interpret(expression, environment = new Environment(), s
 	else if (expression instanceof Operator) {
 		if (expression instanceof BinaryOperator) {
 			if (expression instanceof And) {
-				const [left, s1] = π(expression.left);
-				const [right, s2] = π(expression.right, environment, s1);
-				if (!(left instanceof Boolean) || !(right instanceof Boolean)) {
-					throw new TypeError("Can only and booleans");
+				let [left, s1] = π(expression.left);
+				let [right, s2] = π(expression.right, environment, s1);
+				if (!(left instanceof Boolean)) {
+					left = coerceBoolean(left);
 				}
+				if (!(right instanceof Boolean)) {
+					right = coerceBoolean(right);
+				}
+// 				if (!(left instanceof Boolean) || !(right instanceof Boolean)) {
+// 					throw new TypeError("Can only and booleans");
+// 				}
 				const [{ value: leftValue }, { value: rightValue }] = [left, right];
 				let result;
 				if (left instanceof False || right instanceof False) {
