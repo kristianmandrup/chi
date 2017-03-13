@@ -20,11 +20,11 @@ debug(inspect(ast, {
 	showHidden: false
 }));
 try {
-// 	const [result, store] = interpret(ast);
-// 	debug(store);
-// 	debug(result);
+	const [result, store] = interpret(ast);
+	debug(store);
+	debug(result);
 }
 catch (e) {
-	err(e);
+	err(`"${e.constructor.name}": ${e.message}`);
 	process.exit(1);
 }

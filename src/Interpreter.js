@@ -1,5 +1,5 @@
 import { log, err, debug } from "print-log";
-import { ReferenceError } from "./Error";
+import { ReferenceError, BindError } from "./Error";
 import { Value, Operator, BinaryOperator, UnaryOperator, Add, Subtract, Multiply, Divide, Power, Let, Number, String, Closure, Block, Id, Function, Apply, True, False, Boolean, And, Or, Not } from "./InterpreterClasses";
 class Environment extends Map {
 	set(name, location) {
@@ -150,22 +150,23 @@ export default function interpret(expression, environment = new Environment(), s
 			err(`Can not invoke "${funV.value}", as it is of type "${funV.constructor.name}"`);
 		}
 		else {
-			const { parameters, body, environment } = funV;
+			const { parameters, body, environment, originalArity } = funV;
 			/* Extend the environment and the store */
 			const newEnvironment = new Environment(environment);
 // 			const argMap = new Map(argArray);
-			let i = 0;
-			let bindings = getBindings();
 			function getBindings() {
-				return parameters.map(p => ({
-					[p.name]: newEnvironment.has(p.name)
-				})).reduce((x, y) => Object.assign(x, y), {});
+				return parameters
+					.map(p => ({
+						[p.name]: newEnvironment.has(p.name)
+					}))
+					.reduce((x, y) => Object.assign(x, y), {});
 			}
 			function isAllBound() {
-				const allBound = Object.values(bindings).every(p => p);
+				const allBound = Object.values(getBindings()).every(p => p);
 				/* Let's just return a new closure! */
 				return allBound;
 			}
+			let i = 0;
 			for (const parameter of parameters) {
 				const { name } = parameter;
 				const newLocation = store.nextLocation;
@@ -173,16 +174,25 @@ export default function interpret(expression, environment = new Environment(), s
 				newEnvironment.set(name, newLocation);
 				argStore.set(newLocation, value);
 				const isBindingComplete = isAllBound();
-				if (i === argArray.length - 1) {
-					/* Seems like this was the last parameter provided. */
-					if (!isBindingComplete) {
-						/* Let's just return a new closure! */
-						return [new Closure(parameters.filter(p => !bindings[p.name]), body, newEnvironment), argStore];
-					}
+				const isLastFormalParameter = i === originalArity - 1;
+				const isLastProvidedParameter = i === args.length - 1;
+				if (isLastFormalParameter && !isLastProvidedParameter) {
+					/* The user called this function with too many parameters */
+					throw new BindError(args, originalArity);
+				}
+				else if (!isLastFormalParameter && isLastProvidedParameter && !isAllBound()) {
+					/*
+					* Note that `isLastFormalParameter` and `i` don't play nice together.
+					* We must use `isAllBound` above to check if the entire context is bound.
+					* We don't have enough arguments to evaluate; let's just return a new closure.
+					*/
+					const bindings = getBindings();
+					const closure = new Closure(parameters.filter(p => !bindings[p.name]), body, newEnvironment, originalArity);
+					return [closure, argStore];
 				}
 				++i;
 			}
-			/* We have enough arguments, so let's evaluate. */
+			/* We have enough arguments now, so let's evaluate. */
 			return π(body, newEnvironment, argStore);
 		}
 	}

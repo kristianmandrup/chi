@@ -80,9 +80,10 @@ export class Boolean extends Value {}
 export class True extends Boolean {}
 export class False extends Boolean {}
 export class Closure extends Value {
-	constructor(parameters, body, environment) {
+	constructor(parameters, body, environment, originalArity = parameters.length) {
 		super(null);
 		this.parameters = parameters;
+		this.originalArity = originalArity;
 		this.body = body;
 		this.environment = environment;
 	}
