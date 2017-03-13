@@ -1,6 +1,6 @@
 # chi
 <p align="center">
-  <img alt="logo" src="https://cloud.githubusercontent.com/assets/4442505/23861497/8546651a-080a-11e7-86a2-57a2baa1e56a.png">
+  <img alt="logo" src="https://cloud.githubusercontent.com/assets/4442505/23861535/a7285cf6-080a-11e7-885d-f51787e4c6bb.png">
 </p>
 In order to try it out, run:
 ```bash
