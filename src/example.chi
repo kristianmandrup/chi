@@ -1,2 +1,3 @@
-let f = (x, y) => x² + y¹⁰
-f(1, 2)
+let f = (x, y) => x² + y¹⁰;
+let g = x => f(10, x)
+g(1)

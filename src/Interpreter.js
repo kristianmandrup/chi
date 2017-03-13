@@ -147,7 +147,7 @@ export default function interpret(expression, environment = new Environment(), s
 			argArray.push([arg, [argV, argStore]]);
 		}
 		if (!(funV instanceof Closure)) {
-			err(`Can not invoke "${funV.value}", as it is of type "${funV.constructor.name}"`);
+			throw new TypeError(`Can not invoke "${funV.value}", as it is of type "${funV.constructor.name}"`);
 		}
 		else {
 			const { parameters, body, environment, originalArity } = funV;
