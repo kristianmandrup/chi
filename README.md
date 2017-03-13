@@ -37,8 +37,8 @@ curry1(5)(8)
 curry2(5)(8)
 ```
 ### Arity checking
-```js
 If you try to invoke a function with more arguments than it can receive, chi will refuse to invoke it and instead throw a `BindError`.
+```js
 let f = (x, y) = x * y - 3
 f(1, 2, 3)
 ```
