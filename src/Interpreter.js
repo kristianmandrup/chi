@@ -1,6 +1,38 @@
 import { log, err, debug } from "print-log";
 import { ReferenceError, BindError } from "./Error";
-import { Value, Operator, BinaryOperator, UnaryOperator, Add, Subtract, Multiply, Divide, Power, Let, Number, String, Closure, Block, Id, Function, Apply, True, False, Boolean, And, Or, Not } from "./InterpreterClasses";
+import {
+	Value,
+	Operator,
+	BinaryOperator,
+	UnaryOperator,
+	Add,
+	Subtract,
+	Multiply,
+	Divide,
+	Power,
+	Let,
+	Number,
+	Int,
+	Int8,
+	Int16,
+	Int32,
+	String,
+	Closure,
+	Block,
+	Id,
+	Function,
+	Apply,
+	True,
+	False,
+	Boolean,
+	And,
+	Or,
+	Not,
+	Cast,
+	TypeInt8,
+	TypeInt16,
+	TypeInt32
+} from "./InterpreterClasses";
 class Environment extends Map {
 	set(name, location) {
 		super.set(name, location);
@@ -30,8 +62,30 @@ function coerceBoolean(value) {
 		}
 	}
 }
+function getTypeOf(expression, environment = new Environment(), store = new Store()) {
+	const θ = (expression, env = environment, s = store) => typeOf(expression, env, s);
+	if (expression instanceof Value) {
+		if (expression instanceof Number) {
+			if (expression instanceof Int) {
+				if (expression instanceof Int8) {
+					return new TypeInt8();
+				}
+				if (expression instanceof Int16) {
+					return new TypeInt16();
+				}
+				if (expression instanceof Int32) {
+					return new TypeInt32();
+				}
+			}
+		}
+	}
+	else {
+		throw new TypeError(`Unable to determine type of ${expression}`);
+	}
+}
 export default function interpret(expression, environment = new Environment(), store = new Store()) {
 	const π = (expression, env = environment, s = store) => interpret(expression, env, s);
+	const typeOf = (expression, env = environment, s = store) => getTypeOf(expression, env, s);
 	if (expression instanceof Value) {
 		return [expression, store];
 	}
@@ -91,8 +145,45 @@ export default function interpret(expression, environment = new Environment(), s
 				if (!(left instanceof Number) || !(right instanceof Number)) {
 					throw new TypeError("Can only add numbers");
 				}
-				const [{ value: leftValue }, { value: rightValue }] = [left, right];
-				return [new Number(null, leftValue + rightValue), s1];
+				if (left instanceof Int && right instanceof Int) {
+					/* Casting Int8 */
+					if (left instanceof Int8 && right instanceof Int8) {
+						return [left.add(right), s2];
+					}
+					else if (left instanceof Int8 && !(right instanceof Int8)) {
+						return [right.add(left.to(typeOf(right))), s2];
+					}
+					else if (!(left instanceof Int8) && right instanceof Int8) {
+						return [left.add(right.to(typeOf(left))), s2];
+					}
+					/* Casting Int16 */
+					else if (left instanceof Int16 && right instanceof Int16) {
+						return [left.add(right), s2];
+					}
+					else if (left instanceof Int16 && !(right instanceof Int16)) {
+						return [right.add(left.to(new TypeInt16())), s2];
+					}
+					else if (!(left instanceof Int16) && right instanceof Int16) {
+						return [left.add(right.to(new TypeInt16())), s2];
+					}
+					/* Casting Int32 */
+					else if (left instanceof Int32 && right instanceof Int32) {
+						return [left.add(right), s2];
+					}
+					else if (left instanceof Int32 && !(right instanceof Int32)) {
+						return [left.add(right.to(new TypeInt32())), s2];
+					}
+					else if (!(left instanceof Int32) && right instanceof Int32) {
+						return [right.add(left.to(new TypeInt32())), s2];
+					}
+					else {
+						throw new Error("Add: Not implemented yet");
+					}
+				}
+				else {
+					const [{ value: leftValue }, { value: rightValue }] = [left, right];
+					return [new Number(null, leftValue + rightValue), s2];
+				}
 			}
 			else if (expression instanceof Subtract) {
 				const [left, s1] = π(expression.left);
@@ -118,7 +209,7 @@ export default function interpret(expression, environment = new Environment(), s
 					throw new TypeError();
 				}
 				const [{ value: leftValue }, { value: rightValue }] = [left, right];
-				return [new Number(null, leftValue / rightValue), s1];
+				return [new Number(null, leftValue / rightValue), s2];
 			}
 			else if (expression instanceof Power) {
 				const [left, s1] = π(expression.left);
@@ -239,6 +330,16 @@ export default function interpret(expression, environment = new Environment(), s
 		else {
 			const location = environment.get(name);
 			return [store.get(location), store];
+		}
+	}
+	else if (expression instanceof Cast) {
+		const { target, to: type } = expression;
+		const [value, s1] = π(target);
+		if (value instanceof Number) {
+			return [value.to(type), s1];
+		}
+		else {
+			throw new Error("Not implemented");
 		}
 	}
 	else {

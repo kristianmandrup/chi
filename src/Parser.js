@@ -27,10 +27,16 @@ import {
 	LeftBracket,
 	RightBracket,
 	FatArrow,
-	Comma
+	Comma,
+	Colon,
+	Type,
+	TypeInt8 as TypeInt8Token,
+	TypeInt16 as TypeInt16Token,
+	TypeInt32 as TypeInt32Token
 } from "./Lexer";
 import {
 	Number,
+	Int32,
 	True,
 	False,
 	Let as LetStatement,
@@ -45,7 +51,11 @@ import {
 	Divide,
 	Power,
 	Function,
-	Apply
+	Apply,
+	Cast,
+	TypeInt8,
+	TypeInt16,
+	TypeInt32
 } from "./InterpreterClasses";
 const allTokens = Object.values(lexerImports).filter(x => Token.isPrototypeOf(x));
 function parseSuperScript(value) {
@@ -72,7 +82,7 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("Expression", () => {
 			const and = this.SUBRULE(this.AndExpression);
-			const args = this.MANY(() => {
+			const invocationArgs = this.MANY(() => {
 				this.CONSUME(LeftParenthesis);
 				const args = this.OPTION2(() => {
 					const firstExpression = this.SUBRULE2(this.AndExpression);
@@ -83,16 +93,12 @@ export default class ChiParser extends Parser {
 					return [firstExpression, ...(restExpressions || [])];
 				});
 				this.CONSUME(RightParenthesis);
-				return args || [];
+				return invocationArgs || [];
 			});
-			if (!args.length) {
-				return and;
-			}
-			else {
-				return [and, ...args].reduce((r1, r2) => {
-					return new Apply(null, r1, r2);
-				});
-			}
+			const apply = [and, ...invocationArgs].reduce((r1, r2) => {
+				return new Apply(null, r1, r2);
+			});
+			return invocationArgs.length ? apply : and;
 		});
 		this.RULE("AndExpression", () => {
 			const lhs = this.SUBRULE(this.OrExpression);
@@ -177,7 +183,7 @@ export default class ChiParser extends Parser {
 			}
 		});
 		this.RULE("PowerExpression", () => {
-			const base = this.SUBRULE(this.TermExpression);
+			const base = this.SUBRULE(this.CastExpression);
 			const exponent = this.OPTION(() => {
 				return this.SUBRULE2(this.PowerLiteral);
 			});
@@ -187,6 +193,34 @@ export default class ChiParser extends Parser {
 			else {
 				return base;
 			}
+		});
+		this.RULE("CastExpression", () => {
+			const value = this.SUBRULE(this.TermExpression);
+			const types = this.MANY(() => {
+				this.CONSUME(Colon);
+				return this.OR([{
+					ALT: () => this.SUBRULE(this.Identifier)
+				}, {
+					ALT: () => {
+						const type = this.CONSUME(Type);
+						if (type instanceof TypeInt8Token) {
+							return new TypeInt8();
+						}
+						else if (type instanceof TypeInt16Token) {
+							return new TypeInt16();
+						}
+						else if (type instanceof TypeInt32Token) {
+							return new TypeInt32();
+						}
+						else {
+							throw new Error(`Unknown type: ${type.image}`);
+						}
+					}
+				}]);
+			});
+			return [value, ...types].reduce((x, y) => {
+				return new Cast(null, x, y);
+			});
 		});
 		this.RULE("PowerLiteral", () => {
 			const power = this.CONSUME(PowerLiteral);
@@ -229,7 +263,8 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("NumberLiteral", () => {
 			const number = this.CONSUME(NumberLiteral);
-			return new Number(number.meta.location, global.Number(number.image));
+			const conversion = global.Number(number.image);
+			return new Int32(number.meta.location, new Int32Array([conversion]));
 		});
 		this.RULE("BooleanLiteral", () => {
 			const boolean = this.CONSUME(BooleanLiteral);

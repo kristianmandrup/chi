@@ -1,3 +1,2 @@
-let X = true;
-let Y = false;
-(¬X ∧ Y) ∨ Y
+let a = 255:i8 + 2:i16;
+let b = 1 + 128:i8;

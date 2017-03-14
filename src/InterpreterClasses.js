@@ -1,5 +1,9 @@
 export const LEFT = Symbol("Left-associative");
 export const RIGHT = Symbol("Right-associative");
+export class Type {}
+export class TypeInt8 extends Type {}
+export class TypeInt16 extends Type {}
+export class TypeInt32 extends Type {}
 export class Locatable {
 	constructor(location = null) {
 		this.location = location;
@@ -74,7 +78,53 @@ export class Id extends Expression {
 		this.name = name;
 	}
 }
+export class Cast extends Locatable {
+	constructor(location, target, to) {
+		super(location);
+		this.target = target;
+		this.to = to;
+	}
+}
 export class Number extends Value {}
+export class Int extends Number {
+	to(type) {
+		if (type instanceof TypeInt8) {
+			return new Int8(null, Int8Array.from(this.value));
+		}
+		else if (type instanceof TypeInt16) {
+			return new Int16(null, Int16Array.from(this.value));
+		}
+		else if (type instanceof TypeInt32) {
+			return new Int32(null, Int32Array.from(this.value));
+		}
+		else {
+			throw new Error(`Cast not impemented: ${type}`);
+		}
+	}
+	compute(f, x) {
+		const [{ value: value1 }, { value: value2 }] = [this, x];
+		f(value1, value2);
+		return new this.constructor(null, value1);
+	}
+	add(x) {
+		return this.compute((a, b) => a[0] += b[0], x);
+	}
+	subtract(x) {
+		return this.compute((a, b) => a[0] -= b[0], x);
+	}
+	multiply(x) {
+		return this.compute((a, b) => a[0] *= b[0], x);
+	}
+	divide(x) {
+		return this.compute((a, b) => a[0] /= b[0], x);
+	}
+	inspect() {
+		return `${this.constructor.name} { ${this.value[0]} }`;
+	}
+}
+export class Int8 extends Int {}
+export class Int16 extends Int {}
+export class Int32 extends Int {}
 export class String extends Value {}
 export class Boolean extends Value {}
 export class True extends Boolean {}

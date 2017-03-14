@@ -21,6 +21,9 @@ export class MetaToken extends Token {
 export class Identifier extends MetaToken {
 	static PATTERN = /[a-zA-Z]\w*/;
 }
+export class Colon extends MetaToken {
+	static PATTERN = /:/;
+}
 export class Additive extends MetaToken {
 	static PATERN = /\+|-/
 }
@@ -115,6 +118,18 @@ export class Do extends Keyword {
 export class Let extends Keyword {
 	static PATTERN = /let/;
 }
+export class Type extends Keyword {
+	static PATTERN = NA;
+}
+export class TypeInt8 extends Type {
+	static PATTERN = /i8/;
+}
+export class TypeInt16 extends Type {
+	static PATTERN = /i16/;
+}
+export class TypeInt32 extends Type {
+	static PATTERN = /i32/;
+}
 export class Whitespace extends MetaToken {
 	static PATTERN = /\s+/;
 	static GROUP = SKIPPED
@@ -141,6 +156,7 @@ export const allTokens = [
 	Asterisk,
 	Slash,
 	Semicolon,
+	Colon,
 	FatArrow,
 	Comma,
 	Equals,
@@ -149,6 +165,10 @@ export const allTokens = [
 	For,
 	Do,
 	Let,
+	Type,
+	TypeInt8,
+	TypeInt16,
+	TypeInt32,
 	Identifier
 ];
 export default class {
