@@ -19,6 +19,18 @@ Bindings allow you to bind a value to a name. Note that there is no significant 
 let a = 3;
 let b = 5
 ```
+### Numbers
+There are currently the types `i8`, `i16` and `i32` in the language. If you don't specify the type of a number literal, it will be assumed to be of type `i32`. Mathematical operations where the operands are of different numeric type will produce a result in the number type with the greater domain. In the example, a will be `255:i8 + 2:i16`, which is equivalent to `-1:i8 + 2:i16`, which is equivalent to `-1:16 + 2:i16`, which will be evaluated to `1:i16`.
+
+The second line demonstrates that `1 + 128:i8` is equivalent to `1:i32 + 128:i8`, and will by the same rules be evaluated to `-127:i32`.
+```js
+255:i8 + 2:i16;
+1 + 128:i8;
+```
+You can also perform *cast chaining* as demonstrated below. This will result in `2258274`, a 32-bit integer, being cast to 16-bit integer which will then be casted to an 8-bit integer. (This is equivalent to casting the 32-bit integer to an 8-bit integer directly, but there are indeed use cases where casting a value multiple times can turn out to be beneficial.)
+```js
+2258274:i16:i8
+```
 ### Function expressions
 Function expressions allow you to abstract your code over variables. Note that in chi, you don't need an explicit `return` statement, as blocks evaluate to their last expression. So, in the example, `sum1` and `sum2` are semantically equivalent.
 ```js
