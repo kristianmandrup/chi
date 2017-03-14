@@ -119,14 +119,40 @@ export class Int extends Number {
 		return this.compute((a, b) => a[0] /= b[0], x);
 	}
 	inspect() {
-		return `${this.constructor.name} { ${this.value[0]} }`;
+		let hint;
+		if (this instanceof Int8) {
+			hint = "8";
+		}
+		else if (this instanceof Int16) {
+			hint = "16";
+		}
+		else if (this instanceof Int32) {
+			hint = "32";
+		}
+		return `${this.value[0]}:i${hint}`;
 	}
 }
 export class Int8 extends Int {}
 export class Int16 extends Int {}
 export class Int32 extends Int {}
-export class String extends Value {}
-export class Boolean extends Value {}
+export class String extends Value {
+	concatenate(string) {
+		return new String(null, this.value + string.value);
+	}
+}
+export class Boolean extends Value {
+	inspect() {
+		if (this instanceof True) {
+			return "true";
+		}
+		else if (this instanceof False) {
+			return "false";
+		}
+		else {
+			throw new Error("Tried to inspect generic boolean");
+		}
+	}
+}
 export class True extends Boolean {}
 export class False extends Boolean {}
 export class Closure extends Value {

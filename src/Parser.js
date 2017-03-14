@@ -6,6 +6,7 @@ import {
 	Identifier,
 	Equals,
 	NumberLiteral,
+	StringLiteral,
 	PowerLiteral,
 	BooleanLiteral,
 	TrueLiteral,
@@ -29,6 +30,8 @@ import {
 	FatArrow,
 	Comma,
 	Colon,
+	If,
+	Else,
 	Type,
 	TypeInt8 as TypeInt8Token,
 	TypeInt16 as TypeInt16Token,
@@ -36,6 +39,7 @@ import {
 } from "./Lexer";
 import {
 	Number,
+	String,
 	Int32,
 	True,
 	False,
@@ -256,6 +260,8 @@ export default class ChiParser extends Parser {
 			return this.OR([{
 				ALT: () => this.SUBRULE(this.NumberLiteral)
 			}, {
+				ALT: () => this.SUBRULE(this.StringLiteral)
+			}, {
 				ALT: () => this.SUBRULE(this.BooleanLiteral)
 			}, {
 				ALT: () => this.SUBRULE(this.FunctionLiteral)
@@ -265,6 +271,11 @@ export default class ChiParser extends Parser {
 			const number = this.CONSUME(NumberLiteral);
 			const conversion = global.Number(number.image);
 			return new Int32(number.meta.location, new Int32Array([conversion]));
+		});
+		this.RULE("StringLiteral", () => {
+			const string = this.CONSUME(StringLiteral);
+			const conversion = global.String(string.image.replace(/^"|"$/g, ""));
+			return new String(string.meta.location, conversion);
 		});
 		this.RULE("BooleanLiteral", () => {
 			const boolean = this.CONSUME(BooleanLiteral);

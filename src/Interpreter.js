@@ -12,11 +12,11 @@ import {
 	Power,
 	Let,
 	Number,
+	String,
 	Int,
 	Int8,
 	Int16,
 	Int32,
-	String,
 	Closure,
 	Block,
 	Id,
@@ -142,8 +142,11 @@ export default function interpret(expression, environment = new Environment(), s
 			else if (expression instanceof Add) {
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
-				if (!(left instanceof Number) || !(right instanceof Number)) {
-					throw new TypeError("Can only add numbers");
+				if (left instanceof String && right instanceof String) {
+					return [left.concatenate(right), s2];
+				}
+				else if (!(left instanceof Number) || !(right instanceof Number)) {
+					throw new TypeError(`The operator "+" can only be used for two strings or two numbers.`);
 				}
 				if (left instanceof Int && right instanceof Int) {
 					/* Casting Int8 */

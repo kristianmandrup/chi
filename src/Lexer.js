@@ -93,6 +93,9 @@ export class FalseLiteral extends BooleanLiteral {
 export class NumberLiteral extends Literal {
 	static PATTERN = /\d+/;
 }
+export class StringLiteral extends Literal {
+	static PATTERN = /"[^"]+"/;
+}
 export class Semicolon extends MetaToken {
 	static PATTERN = /;/;
 }
@@ -117,6 +120,12 @@ export class Do extends Keyword {
 }
 export class Let extends Keyword {
 	static PATTERN = /let/;
+}
+export class If extends Keyword {
+	static PATTERN = /if/;
+}
+export class Else extends Keyword {
+	static PATTERN = /else/;
 }
 export class Type extends Keyword {
 	static PATTERN = NA;
@@ -150,6 +159,7 @@ export const allTokens = [
 	TrueLiteral,
 	FalseLiteral,
 	NumberLiteral,
+	StringLiteral,
 	PowerLiteral,
 	Plus,
 	Minus,
@@ -161,6 +171,8 @@ export const allTokens = [
 	Comma,
 	Equals,
 	Keyword,
+	If,
+	Else,
 	While,
 	For,
 	Do,
