@@ -32,6 +32,11 @@ You can also perform *cast chaining* as demonstrated below. This will result in 
 ```js
 2258274:i16:i8
 ```
+You can also cast entire expressions:
+```js
+let a = 1024;
+(a:i8 + a):i16;
+```
 ### Function expressions
 Function expressions allow you to abstract your code over variables. Note that in chi, you don't need an explicit `return` statement, as blocks evaluate to their last expression. So, in the example, `sum1` and `sum2` are semantically equivalent.
 ```js
