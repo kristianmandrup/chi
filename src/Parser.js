@@ -274,7 +274,11 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("StringLiteral", () => {
 			const string = this.CONSUME(StringLiteral);
-			const conversion = global.String(string.image.replace(/^"|"$/g, ""));
+			const conversion = global.String(string
+				.image
+				.replace(/^"|"$/g, "")
+				.replace(/\\"/g, `"`)
+			);
 			return new String(string.meta.location, conversion);
 		});
 		this.RULE("BooleanLiteral", () => {

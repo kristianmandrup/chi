@@ -1,1 +1,3 @@
-true ∧ true
+let p = "hello\""
+let q = " world"
+p + q

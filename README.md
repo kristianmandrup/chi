@@ -37,6 +37,13 @@ You can also cast entire expressions:
 let a = 1024;
 (a:i8 + a):i16;
 ```
+### Strings
+A string literal can be constructed using *double quotes*. The operator `+` is overloaded to handle string concatenation if both operands are strings. Mixing types will throw an error. `"` can be escaped within a string using `\"`.
+```js
+let p = "hello"
+let q = " world"
+p + q
+```
 ### Function expressions
 Function expressions allow you to abstract your code over variables. Note that in chi, you don't need an explicit `return` statement, as blocks evaluate to their last expression. So, in the example, `sum1` and `sum2` are semantically equivalent.
 ```js
