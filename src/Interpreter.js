@@ -301,7 +301,7 @@ export default function interpret(expression, environment = new Environment(), s
 	else if (expression instanceof Cast) {
 		const { target, to: type } = expression;
 		const [value, s1] = π(target);
-		if (value instanceof Number) {
+		if (value instanceof Value) {
 			return [value.to(type), s1];
 		}
 		else {

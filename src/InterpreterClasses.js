@@ -1,4 +1,4 @@
-import { TypeInt8, TypeInt16, TypeInt32 } from "./TypeSystem";
+import { TypeInt8, TypeInt16, TypeInt32, TypeString } from "./TypeSystem";
 export const LEFT = Symbol("Left-associative");
 export const RIGHT = Symbol("Right-associative");
 export class Environment extends Map {
@@ -151,6 +151,14 @@ export class Int8 extends Int {}
 export class Int16 extends Int {}
 export class Int32 extends Int {}
 export class String extends Value {
+	to(type) {
+		if (type === TypeString) {
+			return this;
+		}
+		else {
+			throw new TypeError("Can't cast strings to anything but strings");
+		}
+	}
 	concatenate(string) {
 		return new String(null, this.value + string.value);
 	}

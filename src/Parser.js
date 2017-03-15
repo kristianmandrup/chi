@@ -217,7 +217,10 @@ export default class ChiParser extends Parser {
 				return this.OR([{
 					ALT: () => this.SUBRULE(this.Identifier)
 				}, {
-					ALT: () => this.SUBRULE(this.Type)
+					ALT: () => {
+						const type = this.SUBRULE(this.Type);
+						return type.constructor.TYPE;
+					}
 				}]);
 			});
 			return [value, ...types].reduce((x, y) => {
