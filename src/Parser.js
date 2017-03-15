@@ -72,12 +72,11 @@ function parseSuperScript(value) {
 	return global.Number.parseInt(Array.from(value).map(c => global.String(superscripts.indexOf(c))).join(""));
 }
 function getTokenName(type) {
-	const typeRegExp = types.map(x => ({
-		name: x.name,
-		token: x
-	})).find(x => x.name.startsWith(type.name)).token.PATTERN;
-	const typeName = global.String(typeRegExp).replace(/^\/|\/$/g, "");
-	return typeName;
+	return types
+		.find(x => x.TYPE === type)
+		.PATTERN
+		.toString()
+		.replace(/^\/|\/$/g, "");
 }
 export default class ChiParser extends Parser {
 	constructor(input) {
@@ -227,7 +226,7 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("Type", () => {
 			const token = this.CONSUME(Type);
-			return token.type;
+			return token;
 		});
 		this.RULE("PowerLiteral", () => {
 			const power = this.CONSUME(PowerLiteral);
@@ -262,8 +261,8 @@ export default class ChiParser extends Parser {
 			this.CONSUME(Equals);
 			const argument = this.SUBRULE(this.Expression);
 			const realType = typeOf(argument);
-			if (typeHint !== realType) {
-				const typeHintName = getTokenName(typeHint);
+			if (typeHint.constructor.TYPE !== realType) {
+				const typeHintName = getTokenName(typeHint.constructor.TYPE);
 				const realTypeName = getTokenName(realType);
 				throw new TypeError(`Type hint "${typeHintName}" does not match real type "${realTypeName}"`);
 			}

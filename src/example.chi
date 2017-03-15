@@ -1,2 +1,1 @@
 let p:string = "hello\""
-let q:string = " world"

@@ -138,19 +138,19 @@ export class Type extends Keyword {
 }
 export class TypeInt8 extends Type {
 	static PATTERN = /i8/;
-	type = i8;
+	static TYPE = i8;
 }
 export class TypeInt16 extends Type {
 	static PATTERN = /i16/;
-	type = i16;
+	static TYPE = i16;
 }
 export class TypeInt32 extends Type {
 	static PATTERN = /i32/;
-	type = i32;
+	static TYPE = i32;
 }
 export class TypeString extends Type {
 	static PATTERN = /string/;
-	type = string;
+	static TYPE = string;
 }
 export class Whitespace extends MetaToken {
 	static PATTERN = /\s+/;
