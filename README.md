@@ -29,7 +29,7 @@ Chi supports static typing. If no type is specified, a type will be inferred. Ma
 - `bool`
 
 ### Numbers, type casting
-There are currently the integer types `i8`, `i16` and `i32` for numerical values. If you don't specify the type of an integer literal, it will be assumed to be of type `i32`. In the example below, the first line will be `255:i8 + 2:i16`, which is equivalent to `-1:i8 + 2:i16`, which is equivalent to `-1:16 + 2:i16`, which will be evaluated to `1:i16`.
+There are currently the integer types `i8`, `i16` and `i32` for numerical values. If you don't specify the type of an integer literal, it will be assumed to be of type `i32`. In the example below, the first line will be `255:i8 + 2:i16`, which is equivalent to `-1:i8 + 2:i16`, which is equivalent to `-1:i16 + 2:i16`, which will be evaluated to `1:i16`.
 
 The second line demonstrates that `1 + 128:i8` is equivalent to `1:i32 + 128:i8`, and will by the same rules be evaluated to `-127:i32`.
 ```js
