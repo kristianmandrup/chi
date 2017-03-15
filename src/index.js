@@ -1,6 +1,7 @@
 import Lexer from "./Lexer";
 import Parser from "./Parser";
 import interpret from "./Interpreter";
+import checkTypes from "./TypeSystem";
 import { log, debug, err } from "print-log";
 import { readFileSync } from "fs";
 import { inspect } from "util";
@@ -20,6 +21,9 @@ debug(inspect(ast, {
 	showHidden: false
 }));
 try {
+	debug("Checking types…");
+	checkTypes(ast);
+	debug("Interpreting…");
 	const [result, store] = interpret(ast);
 	debug(store);
 	debug(result);

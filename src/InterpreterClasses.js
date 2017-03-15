@@ -1,4 +1,10 @@
-import { TypeInt8, TypeInt16, TypeInt32, TypeString } from "./TypeSystem";
+import {
+	TypeInt8,
+	TypeInt16,
+	TypeInt32, 
+	TypeString,
+	TypeBool
+} from "./Types";
 export const LEFT = Symbol("Left-associative");
 export const RIGHT = Symbol("Right-associative");
 export class Environment extends Map {
@@ -67,9 +73,9 @@ export class Multiply extends BinaryOperator {}
 export class Divide extends BinaryOperator {}
 export class Power extends BinaryOperator {}
 export class Let extends Statement {
-	constructor(location, name, expression) {
+	constructor(location, identifier, expression) {
 		super(location);
-		this.name = name;
+		this.identifier = identifier;
 		this.expression = expression;
 	}
 }
@@ -88,9 +94,10 @@ export class Apply extends Expression {
 	}
 }
 export class Id extends Expression {
-	constructor(location, name) {
+	constructor(location, name, typeHint) {
 		super(location);
 		this.name = name;
+		this.typeHint = typeHint;
 	}
 }
 export class Cast extends Locatable {
@@ -156,7 +163,7 @@ export class String extends Value {
 			return this;
 		}
 		else {
-			throw new TypeError("Can't cast strings to anything but strings");
+			throw new TypeError(`Can't cast string "${this.value}" to anything but strings`);
 		}
 	}
 	concatenate(string) {

@@ -4,8 +4,9 @@ import {
 	TypeInt8 as i8,
 	TypeInt16 as i16,
 	TypeInt32 as i32,
-	TypeString as string
-} from "./TypeSystem";
+	TypeString as string,
+	TypeBool as bool
+} from "./Types";
 const { SKIPPED, NA } = Lexer;
 export class MetaToken extends Token {
 	get meta() {
@@ -67,10 +68,10 @@ export class PowerLiteral extends MetaToken {
 	static PATTERN = /[⁰¹²³⁴⁵⁶⁷⁸⁹]+/;
 }
 export class LeftBrace extends MetaToken {
-	static PATTERN = /\{/;
+	static PATTERN = /{/;
 }
 export class RightBrace extends MetaToken {
-	static PATTERN = /\}/;
+	static PATTERN = /}/;
 }
 export class LeftParenthesis extends MetaToken {
 	static PATTERN = /\(/;
@@ -136,6 +137,10 @@ export class Else extends Keyword {
 export class Type extends Keyword {
 	static PATTERN = NA;
 }
+export class TypeBool extends Type {
+	static PATTERN = /bool/;
+	static TYPE = bool;
+}
 export class TypeInt8 extends Type {
 	static PATTERN = /i8/;
 	static TYPE = i8;
@@ -195,6 +200,7 @@ export const allTokens = [
 	TypeInt16,
 	TypeInt32,
 	TypeString,
+	TypeBool,
 	Identifier
 ];
 export default class {

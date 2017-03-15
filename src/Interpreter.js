@@ -270,33 +270,18 @@ export default function interpret(expression, environment = new Environment(), s
 		}
 	}
 	else if (expression instanceof Let) {
-		const { name, expression: boundExpression } = expression;
-		try {
-			const [value, s1] = π(boundExpression);
-			const newStore = new Store(s1);
-			const location = environment.set(name, newStore.nextLocation);
-			newStore.set(location, value);
-			return [value, newStore];
-		}
-		catch (e) {
-			if (e instanceof ReferenceError) {
-				/* Did the user try to use a reference to the same variable? */
-				if (e.reference === name) {
-					throw new ReferenceError(name, `Can not use an undeclared reference for "${name}" within its own definition`);
-				}
-			}
-			throw e;
-		}
+		const { identifier, expression: boundExpression } = expression;
+		const { name } = identifier;
+		const [value, s1] = π(boundExpression);
+		const newStore = new Store(s1);
+		const location = environment.set(name, newStore.nextLocation);
+		newStore.set(location, value);
+		return [value, newStore];
 	}
 	else if (expression instanceof Id) {
 		const { name } = expression;
-		if (!environment.has(name)) {
-			throw new ReferenceError(name);
-		}
-		else {
-			const location = environment.get(name);
-			return [store.get(location), store];
-		}
+		const location = environment.get(name);
+		return [store.get(location), store];
 	}
 	else if (expression instanceof Cast) {
 		const { target, to: type } = expression;

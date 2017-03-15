@@ -66,17 +66,9 @@ import typeOf, {
 	TypeString
 } from "./TypeSystem";
 const allTokens = Object.values(lexerImports).filter(x => Token.isPrototypeOf(x));
-const types = Object.values(lexerImports).filter(x => Type.isPrototypeOf(x));
 function parseSuperScript(value) {
 	const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 	return global.Number.parseInt(Array.from(value).map(c => global.String(superscripts.indexOf(c))).join(""));
-}
-function getTokenName(type) {
-	return types
-		.find(x => x.TYPE === type)
-		.PATTERN
-		.toString()
-		.replace(/^\/|\/$/g, "");
 }
 export default class ChiParser extends Parser {
 	constructor(input) {
@@ -256,20 +248,25 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("LetStatement", () => {
 			this.CONSUME(Let);
-			const identifier = this.CONSUME(Identifier);
-			const typeHint = this.OPTION(() => {
+			const identifier = this.SUBRULE(this.Identifier);
+			const typeToken = this.OPTION(() => {
 				this.CONSUME(Colon);
 				return this.SUBRULE(this.Type);
 			});
+			identifier.typeHint = typeToken && typeToken.constructor.TYPE || null;
 			this.CONSUME(Equals);
 			const argument = this.SUBRULE(this.Expression);
-			const realType = typeOf(argument);
-			if (typeHint.constructor.TYPE !== realType) {
-				const typeHintName = getTokenName(typeHint.constructor.TYPE);
-				const realTypeName = getTokenName(realType);
-				throw new TypeError(`Type hint "${typeHintName}" does not match real type "${realTypeName}"`);
-			}
-			return new LetStatement(identifier.meta.location, identifier.image, argument);
+			// const typeContext = typeOf(argument);
+			// const { type: realType } = typeContext;
+			// if (!typeHint) {
+			// 	typeHint = realType;
+			// }
+			// if (typeHint && typeHint.constructor.TYPE !== realType) {
+			// 	const typeHintName = getTokenName(typeHint.constructor.TYPE);
+			// 	const realTypeName = getTokenName(realType);
+			// 	throw new TypeError(`Type hint "${typeHintName}" does not match real type "${realTypeName}"`);
+			// }
+			return new LetStatement(identifier.location, identifier, argument);
 		});
 		this.RULE("Literal", () => {
 			return this.OR([{
