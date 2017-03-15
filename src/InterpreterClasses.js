@@ -1,3 +1,4 @@
+import { TypeInt8, TypeInt16, TypeInt32 } from "./TypeSystem";
 export const LEFT = Symbol("Left-associative");
 export const RIGHT = Symbol("Right-associative");
 export class Environment extends Map {
@@ -19,7 +20,6 @@ export class Store extends Map {
 		return Store.location++;
 	}
 }
-import { TypeInt8, TypeInt16, TypeInt32 } from "./TypeSystem";
 export class Locatable {
 	constructor(location = null) {
 		this.location = location;

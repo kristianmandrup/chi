@@ -1,2 +1,2 @@
-let p:i8 = "hello\""
+let p:string = "hello\""
 let q:string = " world"

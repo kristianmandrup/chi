@@ -106,38 +106,41 @@ export default function interpret(expression, environment = new Environment(), s
 				if (left instanceof String && right instanceof String) {
 					return [left.concatenate(right), s2];
 				}
-				else if (!(left instanceof Number) || !(right instanceof Number)) {
-					throw new TypeError(`The operator "+" can only be used for two strings or two numbers.`);
-				}
 				if (left instanceof Int && right instanceof Int) {
+					const leftInt8 = left instanceof Int8;
+					const rightInt8 = right instanceof Int8;
+					const leftInt16 = left instanceof Int16;
+					const rightInt16 = right instanceof Int16;
+					const leftInt32 = left instanceof Int32;
+					const rightInt32 = right instanceof Int32;
 					/* Casting Int8 */
-					if (left instanceof Int8 && right instanceof Int8) {
+					if (leftInt8 && rightInt8) {
 						return [left.add(right), s2];
 					}
-					else if (left instanceof Int8 && !(right instanceof Int8)) {
+					else if (leftInt8 && !rightInt8) {
 						return [right.add(left.to(typeOf(right))), s2];
 					}
-					else if (!(left instanceof Int8) && right instanceof Int8) {
+					else if (!leftInt8 && rightInt8) {
 						return [left.add(right.to(typeOf(left))), s2];
 					}
 					/* Casting Int16 */
-					else if (left instanceof Int16 && right instanceof Int16) {
+					else if (leftInt16 && rightInt16) {
 						return [left.add(right), s2];
 					}
-					else if (left instanceof Int16 && !(right instanceof Int16)) {
+					else if (leftInt16 && !rightInt16) {
 						return [right.add(left.to(TypeInt16)), s2];
 					}
-					else if (!(left instanceof Int16) && right instanceof Int16) {
+					else if (!leftInt16 && rightInt16) {
 						return [left.add(right.to(TypeInt16)), s2];
 					}
 					/* Casting Int32 */
-					else if (left instanceof Int32 && right instanceof Int32) {
+					else if (leftInt32 && rightInt32) {
 						return [left.add(right), s2];
 					}
-					else if (left instanceof Int32 && !(right instanceof Int32)) {
+					else if (leftInt32 && !rightInt32) {
 						return [left.add(right.to(TypeInt32)), s2];
 					}
-					else if (!(left instanceof Int32) && right instanceof Int32) {
+					else if (!leftInt32 && rightInt32) {
 						return [right.add(left.to(TypeInt32)), s2];
 					}
 					else {
@@ -145,8 +148,7 @@ export default function interpret(expression, environment = new Environment(), s
 					}
 				}
 				else {
-					const [{ value: leftValue }, { value: rightValue }] = [left, right];
-					return [new Number(null, leftValue + rightValue), s2];
+					throw new TypeError(`The operator "+" can only be used for two strings or two numbers.`);
 				}
 			}
 			else if (expression instanceof Subtract) {

@@ -1,5 +1,11 @@
 import chevrotain, { createToken, Lexer, Token } from "chevrotain";
 import { err } from "print-log";
+import {
+	TypeInt8 as i8,
+	TypeInt16 as i16,
+	TypeInt32 as i32,
+	TypeString as string
+} from "./TypeSystem";
 const { SKIPPED, NA } = Lexer;
 export class MetaToken extends Token {
 	get meta() {
@@ -132,19 +138,23 @@ export class Type extends Keyword {
 }
 export class TypeInt8 extends Type {
 	static PATTERN = /i8/;
+	type = i8;
 }
 export class TypeInt16 extends Type {
 	static PATTERN = /i16/;
+	type = i16;
 }
 export class TypeInt32 extends Type {
 	static PATTERN = /i32/;
+	type = i32;
 }
 export class TypeString extends Type {
 	static PATTERN = /string/;
+	type = string;
 }
 export class Whitespace extends MetaToken {
 	static PATTERN = /\s+/;
-	static GROUP = SKIPPED
+	static GROUP = SKIPPED;
 }
 export const allTokens = [
 	Whitespace,

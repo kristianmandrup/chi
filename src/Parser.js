@@ -66,9 +66,18 @@ import typeOf, {
 	TypeString
 } from "./TypeSystem";
 const allTokens = Object.values(lexerImports).filter(x => Token.isPrototypeOf(x));
+const types = Object.values(lexerImports).filter(x => Type.isPrototypeOf(x));
 function parseSuperScript(value) {
 	const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 	return global.Number.parseInt(Array.from(value).map(c => global.String(superscripts.indexOf(c))).join(""));
+}
+function getTokenName(type) {
+	const typeRegExp = types.map(x => ({
+		name: x.name,
+		token: x
+	})).find(x => x.name.startsWith(type.name)).token.PATTERN;
+	const typeName = global.String(typeRegExp).replace(/^\/|\/$/g, "");
+	return typeName;
 }
 export default class ChiParser extends Parser {
 	constructor(input) {
@@ -209,26 +218,16 @@ export default class ChiParser extends Parser {
 				return this.OR([{
 					ALT: () => this.SUBRULE(this.Identifier)
 				}, {
-					ALT: () => {
-						const type = this.CONSUME(Type);
-						if (type instanceof TypeInt8Token) {
-							return new TypeInt8();
-						}
-						else if (type instanceof TypeInt16Token) {
-							return new TypeInt16();
-						}
-						else if (type instanceof TypeInt32Token) {
-							return new TypeInt32();
-						}
-						else {
-							throw new Error(`Unknown type: ${type.image}`);
-						}
-					}
+					ALT: () => this.SUBRULE(this.Type)
 				}]);
 			});
 			return [value, ...types].reduce((x, y) => {
 				return new Cast(null, x, y);
 			});
+		});
+		this.RULE("Type", () => {
+			const token = this.CONSUME(Type);
+			return token.type;
 		});
 		this.RULE("PowerLiteral", () => {
 			const power = this.CONSUME(PowerLiteral);
@@ -258,26 +257,15 @@ export default class ChiParser extends Parser {
 			const identifier = this.CONSUME(Identifier);
 			const typeHint = this.OPTION(() => {
 				this.CONSUME(Colon);
-				const type = this.CONSUME(Type);
-				if (type instanceof TypeInt8Token) {
-					return TypeInt8;
-				}
-				if (type instanceof TypeInt16Token) {
-					return TypeInt16;
-				}
-				if (type instanceof TypeInt32Token) {
-					return TypeInt8;
-				}
-				if (type instanceof TypeStringToken) {
-					return TypeString;
-				}
-				return type;
+				return this.SUBRULE(this.Type);
 			});
 			this.CONSUME(Equals);
 			const argument = this.SUBRULE(this.Expression);
 			const realType = typeOf(argument);
 			if (typeHint !== realType) {
-				console.error(TypeError(`Type hint ${typeHint.name} does not match real type ${realType}`));
+				const typeHintName = getTokenName(typeHint);
+				const realTypeName = getTokenName(realType);
+				throw new TypeError(`Type hint "${typeHintName}" does not match real type "${realTypeName}"`);
 			}
 			return new LetStatement(identifier.meta.location, identifier.image, argument);
 		});
