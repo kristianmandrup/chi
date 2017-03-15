@@ -1,4 +1,6 @@
 let p:string = "\"hello ":string;
 let q:string = " world\"":string;
 (p:string + q:string):string;
-let b:bool = true
+let b:bool = false
+let x = true
+(¬x):bool || b

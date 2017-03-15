@@ -34,16 +34,6 @@ import {
 	Cast
 } from "./InterpreterClasses";
 import { TypeInt8, TypeInt16, TypeInt32 } from "./TypeSystem";
-function coerceBoolean(value) {
-	if (value instanceof Number) {
-		if (value.value === 0) {
-			return new False();
-		}
-		else {
-			return new True();
-		}
-	}
-}
 export default function interpret(expression, environment = new Environment(), store = new Store()) {
 	const π = (expression, env = environment, s = store) => interpret(expression, env, s);
 	const typeOf = (expression, env = environment, s = store) => getTypeOf(expression, env, s);
@@ -65,15 +55,6 @@ export default function interpret(expression, environment = new Environment(), s
 			if (expression instanceof And) {
 				let [left, s1] = π(expression.left);
 				let [right, s2] = π(expression.right, environment, s1);
-				if (!(left instanceof Boolean)) {
-					left = coerceBoolean(left);
-				}
-				if (!(right instanceof Boolean)) {
-					right = coerceBoolean(right);
-				}
-// 				if (!(left instanceof Boolean) || !(right instanceof Boolean)) {
-// 					throw new TypeError("Can only and booleans");
-// 				}
 				const [{ value: leftValue }, { value: rightValue }] = [left, right];
 				let result;
 				if (left instanceof False || right instanceof False) {
@@ -82,14 +63,11 @@ export default function interpret(expression, environment = new Environment(), s
 				else {
 					result = new True();
 				}
-				return [result, s1];
+				return [result, s2];
 			}
 			else if (expression instanceof Or) {
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
-				if (!(left instanceof Boolean) || !(right instanceof Boolean)) {
-					throw new TypeError("Can only and booleans");
-				}
 				const [{ value: leftValue }, { value: rightValue }] = [left, right];
 				let result;
 				if (left instanceof True || right instanceof True) {
@@ -190,9 +168,6 @@ export default function interpret(expression, environment = new Environment(), s
 		else if (expression instanceof UnaryOperator) {
 			if (expression instanceof Not) {
 				const [value, s1] = π(expression.operand);
-				if (!(value instanceof Boolean)) {
-					throw new TypeError("Can only negate booleans");
-				}
 				let result;
 				if (value instanceof False) {
 					result = new True();

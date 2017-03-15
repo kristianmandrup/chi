@@ -101,7 +101,7 @@ export default class ChiParser extends Parser {
 					return [firstExpression, ...(restExpressions || [])];
 				});
 				this.CONSUME(RightParenthesis);
-				return invocationArgs || [];
+				return args || [];
 			});
 			const apply = [and, ...invocationArgs].reduce((r1, r2) => {
 				return new Apply(null, r1, r2);

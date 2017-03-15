@@ -4,7 +4,13 @@ import {
 	Block,
 	Let,
 	Id,
+	Operator,
+	BinaryOperator,
+	UnaryOperator,
 	Add,
+	And,
+	Or,
+	Not,
 	Value,
 	Number,
 	Environment,
@@ -76,55 +82,90 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			throw e;
 		}
 	}
-	else if (expression instanceof Add) {
-		const [left, s1] = typeOf(expression.left);
-		const [right, s2] = typeOf(expression.right, environment, s1);
-		if (left === TypeString && right === TypeString) {
-			return [TypeString, s2];
+	else if (expression instanceof Operator) {
+		if (expression instanceof BinaryOperator) {
+			if (expression instanceof And) {
+				let [left, s1] = typeOf(expression.left);
+				let [right, s2] = typeOf(expression.right, environment, s1);
+				if (left !== TypeBool || right !== TypeBool) {
+					throw new TypeError(`The operator "∧" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+				}
+				else {
+					return [TypeBool, s2];
+				}
+			}
+			if (expression instanceof Or) {
+				let [left, s1] = typeOf(expression.left);
+				let [right, s2] = typeOf(expression.right, environment, s1);
+				if (left !== TypeBool || right !== TypeBool) {
+					throw new TypeError(`The operator "∨" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+				}
+				else {
+					return [TypeBool, s2];
+				}
+			}
+			else if (expression instanceof Add) {
+				const [left, s1] = typeOf(expression.left);
+				const [right, s2] = typeOf(expression.right, environment, s1);
+				if (left === TypeString && right === TypeString) {
+					return [TypeString, s2];
+				}
+				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
+					const leftInt8 = left === TypeInt8;
+					const rightInt8 = right === TypeInt8;
+					const leftInt16 = left === TypeInt16;
+					const rightInt16 = right === TypeInt16;
+					const leftInt32 = left === TypeInt32;
+					const rightInt32 = right === TypeInt32;
+					/* Casting Int8 */
+					if (leftInt8 && rightInt8) {
+						return [left, s2];
+					}
+					else if (leftInt8 && !rightInt8) {
+						return [right, s2];
+					}
+					else if (!leftInt8 && rightInt8) {
+						return [left, s2];
+					}
+					/* Casting Int16 */
+					else if (leftInt16 && rightInt16) {
+						return [typeType, s2];
+					}
+					else if (leftInt16 && !rightInt16) {
+						return [right, s2];
+					}
+					else if (!leftInt16 && rightInt16) {
+						return [left, s2];
+					}
+					/* Casting Int32 */
+					else if (leftInt32 && rightInt32) {
+						return [left, s2];
+					}
+					else if (leftInt32 && !rightInt32) {
+						return [left, s2];
+					}
+					else if (!leftInt32 && rightInt32) {
+						return [right, s2];
+					}
+					else {
+						throw new Error("Add: Not implemented yet");
+					}
+				}
+				else {
+					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+				}
+			}
 		}
-		if (TypeInt.isPrototypeOf(leftType) && TypeInt.isPrototypeOf(rightType)) {
-			const leftInt8 = left === TypeInt8;
-			const rightInt8 = right === TypeInt8;
-			const leftInt16 = left === TypeInt16;
-			const rightInt16 = right === TypeInt16;
-			const leftInt32 = left === TypeInt32;
-			const rightInt32 = right === TypeInt32;
-			/* Casting Int8 */
-			if (leftInt8 && rightInt8) {
-				return [leftType, s2];
+		if (expression instanceof UnaryOperator) {
+			if (expression instanceof Not) {
+				const [operandType, s1] = typeOf(expression.operand);
+				if (operandType !== TypeBool) {
+					throw new TypeError(`The operator "¬" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+				}
+				else {
+					return [TypeBool, s1];
+				}
 			}
-			else if (leftInt8 && !rightInt8) {
-				return [rightType, s2];
-			}
-			else if (!leftInt8 && rightInt8) {
-				return [leftType, s2];
-			}
-			/* Casting Int16 */
-			else if (leftInt16 && rightInt16) {
-				return [typeType, s2];
-			}
-			else if (leftInt16 && !rightInt16) {
-				return [rightType, s2];
-			}
-			else if (!leftInt16 && rightInt16) {
-				return [leftType, s2];
-			}
-			/* Casting Int32 */
-			else if (leftInt32 && rightInt32) {
-				return [leftType, s2];
-			}
-			else if (leftInt32 && !rightInt32) {
-				return [leftType, s2];
-			}
-			else if (!leftInt32 && rightInt32) {
-				return [rightType, s2];
-			}
-			else {
-				throw new Error("Add: Not implemented yet");
-			}
-		}
-		else {
-			throw new TypeError(`The operator "+" can only be used for two strings or two numbers.`);
 		}
 	}
 	else if (expression instanceof Value) {
@@ -165,7 +206,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			return [type, s1];
 		}
 		else {
-			throw new Error("Not implemented");
+			throw new TypeError(`Can not cast "${toKeyword(targetType)}" to "${toKeyword(type)}"`);
 		}
 	}
 	err(expression);
