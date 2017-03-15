@@ -35,7 +35,8 @@ import {
 	Type,
 	TypeInt8 as TypeInt8Token,
 	TypeInt16 as TypeInt16Token,
-	TypeInt32 as TypeInt32Token
+	TypeInt32 as TypeInt32Token,
+	TypeString as TypeStringToken
 } from "./Lexer";
 import {
 	Number,
@@ -56,11 +57,14 @@ import {
 	Power,
 	Function,
 	Apply,
-	Cast,
+	Cast
+} from "./InterpreterClasses";
+import typeOf, {
 	TypeInt8,
 	TypeInt16,
-	TypeInt32
-} from "./InterpreterClasses";
+	TypeInt32,
+	TypeString
+} from "./TypeSystem";
 const allTokens = Object.values(lexerImports).filter(x => Token.isPrototypeOf(x));
 function parseSuperScript(value) {
 	const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
@@ -252,9 +256,30 @@ export default class ChiParser extends Parser {
 		this.RULE("LetStatement", () => {
 			this.CONSUME(Let);
 			const identifier = this.CONSUME(Identifier);
+			const typeHint = this.OPTION(() => {
+				this.CONSUME(Colon);
+				const type = this.CONSUME(Type);
+				if (type instanceof TypeInt8Token) {
+					return TypeInt8;
+				}
+				if (type instanceof TypeInt16Token) {
+					return TypeInt16;
+				}
+				if (type instanceof TypeInt32Token) {
+					return TypeInt8;
+				}
+				if (type instanceof TypeStringToken) {
+					return TypeString;
+				}
+				return type;
+			});
 			this.CONSUME(Equals);
-			const number = this.SUBRULE(this.Expression);
-			return new LetStatement(identifier.meta.location, identifier.image, number);
+			const argument = this.SUBRULE(this.Expression);
+			const realType = typeOf(argument);
+			if (typeHint !== realType) {
+				console.error(TypeError(`Type hint ${typeHint.name} does not match real type ${realType}`));
+			}
+			return new LetStatement(identifier.meta.location, identifier.image, argument);
 		});
 		this.RULE("Literal", () => {
 			return this.OR([{

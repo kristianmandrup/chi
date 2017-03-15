@@ -1,9 +1,25 @@
 export const LEFT = Symbol("Left-associative");
 export const RIGHT = Symbol("Right-associative");
-export class Type {}
-export class TypeInt8 extends Type {}
-export class TypeInt16 extends Type {}
-export class TypeInt32 extends Type {}
+export class Environment extends Map {
+	set(name, location) {
+		super.set(name, location);
+		return location;
+	}
+}
+export class Store extends Map {
+	static location = 0;
+	at(location) {
+		return this.get(location);
+	}
+	set(location, value) {
+		super.set(location, value);
+		return location;
+	}
+	get nextLocation() {
+		return Store.location++;
+	}
+}
+import { TypeInt8, TypeInt16, TypeInt32 } from "./TypeSystem";
 export class Locatable {
 	constructor(location = null) {
 		this.location = location;
@@ -17,7 +33,6 @@ export class Block extends Locatable {
 }
 export class Statement extends Locatable {
 	constructor(location, content = null) {
-		// console.log("statement content", content);
 		super(location);
 		this.value = content;
 	}
@@ -88,13 +103,13 @@ export class Cast extends Locatable {
 export class Number extends Value {}
 export class Int extends Number {
 	to(type) {
-		if (type instanceof TypeInt8) {
+		if (type === TypeInt8) {
 			return new Int8(null, Int8Array.from(this.value));
 		}
-		else if (type instanceof TypeInt16) {
+		else if (type === TypeInt16) {
 			return new Int16(null, Int16Array.from(this.value));
 		}
-		else if (type instanceof TypeInt32) {
+		else if (type === TypeInt32) {
 			return new Int32(null, Int32Array.from(this.value));
 		}
 		else {

@@ -1,6 +1,9 @@
 import { log, err, debug } from "print-log";
 import { ReferenceError, BindError } from "./Error";
+import getTypeOf from "./TypeSystem";
 import {
+	Environment,
+	Store,
 	Value,
 	Operator,
 	BinaryOperator,
@@ -28,30 +31,9 @@ import {
 	And,
 	Or,
 	Not,
-	Cast,
-	TypeInt8,
-	TypeInt16,
-	TypeInt32
+	Cast
 } from "./InterpreterClasses";
-class Environment extends Map {
-	set(name, location) {
-		super.set(name, location);
-		return location;
-	}
-}
-class Store extends Map {
-	static location = 0;
-	at(location) {
-		return this.get(location);
-	}
-	set(location, value) {
-		super.set(location, value);
-		return location;
-	}
-	get nextLocation() {
-		return Store.location++;
-	}
-}
+import { TypeInt8, TypeInt16, TypeInt32 } from "./TypeSystem";
 function coerceBoolean(value) {
 	if (value instanceof Number) {
 		if (value.value === 0) {
@@ -60,27 +42,6 @@ function coerceBoolean(value) {
 		else {
 			return new True();
 		}
-	}
-}
-function getTypeOf(expression, environment = new Environment(), store = new Store()) {
-	const θ = (expression, env = environment, s = store) => typeOf(expression, env, s);
-	if (expression instanceof Value) {
-		if (expression instanceof Number) {
-			if (expression instanceof Int) {
-				if (expression instanceof Int8) {
-					return new TypeInt8();
-				}
-				if (expression instanceof Int16) {
-					return new TypeInt16();
-				}
-				if (expression instanceof Int32) {
-					return new TypeInt32();
-				}
-			}
-		}
-	}
-	else {
-		throw new TypeError(`Unable to determine type of ${expression}`);
 	}
 }
 export default function interpret(expression, environment = new Environment(), store = new Store()) {
@@ -164,20 +125,20 @@ export default function interpret(expression, environment = new Environment(), s
 						return [left.add(right), s2];
 					}
 					else if (left instanceof Int16 && !(right instanceof Int16)) {
-						return [right.add(left.to(new TypeInt16())), s2];
+						return [right.add(left.to(TypeInt16)), s2];
 					}
 					else if (!(left instanceof Int16) && right instanceof Int16) {
-						return [left.add(right.to(new TypeInt16())), s2];
+						return [left.add(right.to(TypeInt16)), s2];
 					}
 					/* Casting Int32 */
 					else if (left instanceof Int32 && right instanceof Int32) {
 						return [left.add(right), s2];
 					}
 					else if (left instanceof Int32 && !(right instanceof Int32)) {
-						return [left.add(right.to(new TypeInt32())), s2];
+						return [left.add(right.to(TypeInt32)), s2];
 					}
 					else if (!(left instanceof Int32) && right instanceof Int32) {
-						return [right.add(left.to(new TypeInt32())), s2];
+						return [right.add(left.to(TypeInt32)), s2];
 					}
 					else {
 						throw new Error("Add: Not implemented yet");

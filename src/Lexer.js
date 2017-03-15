@@ -139,6 +139,9 @@ export class TypeInt16 extends Type {
 export class TypeInt32 extends Type {
 	static PATTERN = /i32/;
 }
+export class TypeString extends Type {
+	static PATTERN = /string/;
+}
 export class Whitespace extends MetaToken {
 	static PATTERN = /\s+/;
 	static GROUP = SKIPPED
@@ -181,6 +184,7 @@ export const allTokens = [
 	TypeInt8,
 	TypeInt16,
 	TypeInt32,
+	TypeString,
 	Identifier
 ];
 export default class {
