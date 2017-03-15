@@ -20,8 +20,16 @@ Bindings allow you to bind a value to a name. Note that there is no significant 
 let a = 3;
 let b = 5
 ```
-### Numbers
-There are currently the types `i8`, `i16` and `i32` in the language. If you don't specify the type of a number literal, it will be assumed to be of type `i32`. Mathematical operations where the operands are of different numeric type will produce a result in the number type with the greater domain. In the example, `a` will be `255:i8 + 2:i16`, which is equivalent to `-1:i8 + 2:i16`, which is equivalent to `-1:16 + 2:i16`, which will be evaluated to `1:i16`.
+### Types
+Chi supports static typing. If no type is specified, a type will be inferred. Mathematical operations where the operands are of different numeric type will produce a result in the number type with the greater domain. The set of types currently consists of:
+- `i8`
+- `i16`
+- `i32`
+- `string`
+- `bool`
+
+### Numbers, type casting
+There are currently the integer types `i8`, `i16` and `i32` for numerical values. If you don't specify the type of an integer literal, it will be assumed to be of type `i32`. In the example below, the first line will be `255:i8 + 2:i16`, which is equivalent to `-1:i8 + 2:i16`, which is equivalent to `-1:16 + 2:i16`, which will be evaluated to `1:i16`.
 
 The second line demonstrates that `1 + 128:i8` is equivalent to `1:i32 + 128:i8`, and will by the same rules be evaluated to `-127:i32`.
 ```js

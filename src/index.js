@@ -12,15 +12,15 @@ debug("Parsing…");
 debug(tokens.tokens);
 const parser = new Parser(tokens.tokens);
 const ast = parser.Block();
-if (parser.errors.length) {
-	err(parser.errors);
-}
-debug("Below is the resulting AST");
-debug(inspect(ast, {
-	depth: null,
-	showHidden: false
-}));
 try {
+	if (parser.errors.length) {
+		throw new Error(parser.errors);
+	}
+	debug("Below is the resulting AST");
+	debug(inspect(ast, {
+		depth: null,
+		showHidden: false
+	}));
 	debug("Checking types…");
 	checkTypes(ast);
 	debug("Interpreting…");

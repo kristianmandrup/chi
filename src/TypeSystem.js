@@ -8,6 +8,9 @@ import {
 	BinaryOperator,
 	UnaryOperator,
 	Add,
+	Subtract,
+	Multiply,
+	Divide,
 	And,
 	Or,
 	Not,
@@ -15,6 +18,7 @@ import {
 	Number,
 	Environment,
 	Store,
+	Int,
 	Int8,
 	Int16,
 	Int32,
@@ -40,6 +44,47 @@ function toKeyword(type) {
 		.PATTERN
 		.toString()
 		.replace(/^\/|\/$/g, "");
+}
+export function getGreaterDomain(left, right) {
+	const leftInt8 = left === TypeInt8;
+	const rightInt8 = right === TypeInt8;
+	const leftInt16 = left === TypeInt16;
+	const rightInt16 = right === TypeInt16;
+	const leftInt32 = left === TypeInt32;
+	const rightInt32 = right === TypeInt32;
+	/* Casting Int8 */
+	if (leftInt8 && rightInt8) {
+		return left;
+	}
+	else if (leftInt8 && !rightInt8) {
+		return right;
+	}
+	else if (!leftInt8 && rightInt8) {
+		return left;
+	}
+	/* Casting Int16 */
+	else if (leftInt16 && rightInt16) {
+		return left;
+	}
+	else if (leftInt16 && !rightInt16) {
+		return right;
+	}
+	else if (!leftInt16 && rightInt16) {
+		return left;
+	}
+	/* Casting Int32 */
+	else if (leftInt32 && rightInt32) {
+		return left;
+	}
+	else if (leftInt32 && !rightInt32) {
+		return left;
+	}
+	else if (!leftInt32 && rightInt32) {
+		return right;
+	}
+	else {
+		throw new Error("Domain: Not implemented yet");
+	}
 }
 const getTypeOf = (expression, environment = new Environment(), store = new Store()) => {
 	const typeOf = (expression, env = environment, s = store) => getTypeOf(expression, env, s);
@@ -111,45 +156,45 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 					return [TypeString, s2];
 				}
 				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
-					const leftInt8 = left === TypeInt8;
-					const rightInt8 = right === TypeInt8;
-					const leftInt16 = left === TypeInt16;
-					const rightInt16 = right === TypeInt16;
-					const leftInt32 = left === TypeInt32;
-					const rightInt32 = right === TypeInt32;
-					/* Casting Int8 */
-					if (leftInt8 && rightInt8) {
-						return [left, s2];
-					}
-					else if (leftInt8 && !rightInt8) {
-						return [right, s2];
-					}
-					else if (!leftInt8 && rightInt8) {
-						return [left, s2];
-					}
-					/* Casting Int16 */
-					else if (leftInt16 && rightInt16) {
-						return [typeType, s2];
-					}
-					else if (leftInt16 && !rightInt16) {
-						return [right, s2];
-					}
-					else if (!leftInt16 && rightInt16) {
-						return [left, s2];
-					}
-					/* Casting Int32 */
-					else if (leftInt32 && rightInt32) {
-						return [left, s2];
-					}
-					else if (leftInt32 && !rightInt32) {
-						return [left, s2];
-					}
-					else if (!leftInt32 && rightInt32) {
-						return [right, s2];
-					}
-					else {
-						throw new Error("Add: Not implemented yet");
-					}
+					const greaterDomain = getGreaterDomain(left, right);
+					expression.typeHint = greaterDomain;
+					return [greaterDomain, s2];
+				}
+				else {
+					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+				}
+			}
+			else if (expression instanceof Subtract) {
+				const [left, s1] = typeOf(expression.left);
+				const [right, s2] = typeOf(expression.right, environment, s1);
+				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
+					const greaterDomain = getGreaterDomain(left, right);
+					expression.typeHint = greaterDomain;
+					return [greaterDomain, s2];
+				}
+				else {
+					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+				}
+			}
+			else if (expression instanceof Multiply) {
+				const [left, s1] = typeOf(expression.left);
+				const [right, s2] = typeOf(expression.right, environment, s1);
+				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
+					const greaterDomain = getGreaterDomain(left, right);
+					expression.typeHint = greaterDomain;
+					return [greaterDomain, s2];
+				}
+				else {
+					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+				}
+			}
+			else if (expression instanceof Divide) {
+				const [left, s1] = typeOf(expression.left);
+				const [right, s2] = typeOf(expression.right, environment, s1);
+				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
+					const greaterDomain = getGreaterDomain(left, right);
+					expression.typeHint = greaterDomain;
+					return [greaterDomain, s2];
 				}
 				else {
 					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
@@ -206,7 +251,13 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			return [type, s1];
 		}
 		else {
-			throw new TypeError(`Can not cast "${toKeyword(targetType)}" to "${toKeyword(type)}"`);
+			if (TypeInt.isPrototypeOf(type) && TypeInt.isPrototypeOf(targetType)) {
+				/* Allow dynamic casting for integers */
+				return [type, s1];
+			}
+			else {
+				throw new TypeError(`Can not cast "${toKeyword(targetType)}" to "${toKeyword(type)}"`);
+			}
 		}
 	}
 	err(expression);

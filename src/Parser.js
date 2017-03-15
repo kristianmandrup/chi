@@ -256,16 +256,6 @@ export default class ChiParser extends Parser {
 			identifier.typeHint = typeToken && typeToken.constructor.TYPE || null;
 			this.CONSUME(Equals);
 			const argument = this.SUBRULE(this.Expression);
-			// const typeContext = typeOf(argument);
-			// const { type: realType } = typeContext;
-			// if (!typeHint) {
-			// 	typeHint = realType;
-			// }
-			// if (typeHint && typeHint.constructor.TYPE !== realType) {
-			// 	const typeHintName = getTokenName(typeHint.constructor.TYPE);
-			// 	const realTypeName = getTokenName(realType);
-			// 	throw new TypeError(`Type hint "${typeHintName}" does not match real type "${realTypeName}"`);
-			// }
 			return new LetStatement(identifier.location, identifier, argument);
 		});
 		this.RULE("Literal", () => {

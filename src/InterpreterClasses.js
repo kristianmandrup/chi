@@ -94,7 +94,7 @@ export class Apply extends Expression {
 	}
 }
 export class Id extends Expression {
-	constructor(location, name, typeHint) {
+	constructor(location, name, typeHint = null) {
 		super(location);
 		this.name = name;
 		this.typeHint = typeHint;
@@ -109,6 +109,9 @@ export class Cast extends Locatable {
 }
 export class Number extends Value {}
 export class Int extends Number {
+	get number() {
+		return this.value[0];
+	}
 	to(type) {
 		if (type === TypeInt8) {
 			return new Int8(null, Int8Array.from(this.value));
@@ -123,22 +126,17 @@ export class Int extends Number {
 			throw new Error(`Cast not impemented: ${type}`);
 		}
 	}
-	compute(f, x) {
-		const [{ value: value1 }, { value: value2 }] = [this, x];
-		f(value1, value2);
-		return new this.constructor(null, value1);
+	static add(left, right) {
+		return this.compute(left, right, (x, y) => x.number + y.number);
 	}
-	add(x) {
-		return this.compute((a, b) => a[0] += b[0], x);
+	static subtract(left, right) {
+		return this.compute(left, right, (x, y) => x.number - y.number);
 	}
-	subtract(x) {
-		return this.compute((a, b) => a[0] -= b[0], x);
+	static multiply(left, right) {
+		return this.compute(left, right, (x, y) => x.number * y.number);
 	}
-	multiply(x) {
-		return this.compute((a, b) => a[0] *= b[0], x);
-	}
-	divide(x) {
-		return this.compute((a, b) => a[0] /= b[0], x);
+	static divide(left, right) {
+		return this.compute(left, right, (x, y) => x.number / y.number);
 	}
 	inspect() {
 		let hint;
@@ -154,9 +152,27 @@ export class Int extends Number {
 		return `${this.value[0]}:i${hint}`;
 	}
 }
-export class Int8 extends Int {}
-export class Int16 extends Int {}
-export class Int32 extends Int {}
+export class Int8 extends Int {
+	static compute(left, right, f) {
+		const l = left.to(TypeInt8) 
+		const r = right.to(TypeInt8);
+		return new Int8(null, Int8Array.from([f(left, right)]));
+	}
+}
+export class Int16 extends Int {
+	static compute(left, right, f) {
+		const l = left.to(TypeInt16) 
+		const r = right.to(TypeInt16);
+		return new Int16(null, Int16Array.from([f(left, right)]));
+	}
+}
+export class Int32 extends Int {
+	static compute(left, right, f) {
+		const l = left.to(TypeInt32) 
+		const r = right.to(TypeInt32);
+		return new Int32(null, Int32Array.from([f(left, right)]));
+	}
+}
 export class String extends Value {
 	to(type) {
 		if (type === TypeString) {
@@ -171,6 +187,11 @@ export class String extends Value {
 	}
 }
 export class Boolean extends Value {
+	to(type) {
+		if (type === TypeBool) {
+			return this;
+		}
+	}
 	inspect() {
 		if (this instanceof True) {
 			return "true";
