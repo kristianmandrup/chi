@@ -153,9 +153,6 @@ export default class ChiParser extends Parser {
 				else if (operator instanceof Minus) {
 					return new Subtract(null, r1, r2);
 				}
-				else {
-					throw new Error("Multiplicative operator must be plus or minus");
-				}
 			});
 		});
 		this.RULE("MultiplicativeExpression", () => {
@@ -172,9 +169,6 @@ export default class ChiParser extends Parser {
 				}
 				else if (operator instanceof Slash) {
 					return new Divide(null, r1, r2);
-				}
-				else {
-					throw new Error("Multiplicative operator must be plus or minus");
 				}
 			});
 		});
@@ -290,9 +284,6 @@ export default class ChiParser extends Parser {
 			}
 			else if (boolean instanceof FalseLiteral) {
 				return new False(boolean.meta.location, boolean.image);
-			}
-			else {
-				throw new Error(`Boolean literal should be "true" or "false"`);
 			}
 		});
 		this.RULE("FunctionLiteral", () => {
