@@ -1,7 +1,7 @@
 import { debug } from "print-log";
 import { Parser, Token } from "chevrotain";
-import * as lexerImports from "./Lexer";
 import {
+	allTokens,
 	Let,
 	Identifier,
 	Equals,
@@ -65,7 +65,6 @@ import typeOf, {
 	TypeInt32,
 	TypeString
 } from "./TypeSystem";
-const allTokens = Object.values(lexerImports).filter(x => Token.isPrototypeOf(x));
 function parseSuperScript(value) {
 	const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 	return global.Number.parseInt(Array.from(value).map(c => global.String(superscripts.indexOf(c))).join(""));

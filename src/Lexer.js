@@ -1,4 +1,4 @@
-import chevrotain, { createToken, Lexer, Token } from "chevrotain";
+import chevrotain, { createToken, Lexer, LazyToken as Token } from "chevrotain";
 import { err } from "print-log";
 import {
 	TypeInt8 as i8,
@@ -31,14 +31,11 @@ export class Identifier extends MetaToken {
 export class Colon extends MetaToken {
 	static PATTERN = /:/;
 }
-export class Additive extends MetaToken {
-	static PATERN = /\+|-/
-}
 export class AdditiveOperator extends MetaToken {
-	static PATERN = NA;
+	static PATTERN = NA;
 }
 export class MultiplicativeOperator extends MetaToken {
-	static PATERN = NA;
+	static PATTERN = NA;
 }
 export class Comma extends MetaToken {
 	static PATTERN = /,/;
@@ -179,8 +176,10 @@ export const allTokens = [
 	NumberLiteral,
 	StringLiteral,
 	PowerLiteral,
+	AdditiveOperator,
 	Plus,
 	Minus,
+	MultiplicativeOperator,
 	Asterisk,
 	Slash,
 	Semicolon,
