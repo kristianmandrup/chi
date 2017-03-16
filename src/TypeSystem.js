@@ -24,6 +24,8 @@ import {
 	Int32,
 	String,
 	Boolean,
+	Function,
+	Apply,
 	Cast
 } from "./InterpreterClasses";
 import {
@@ -33,7 +35,10 @@ import {
 	TypeInt16,
 	TypeInt32,
 	TypeString,
-	TypeBool
+	TypeBool,
+	TypeFunction,
+	TypeAny,
+	TypeNone
 } from "./Types";
 import * as lexerImports from "./Lexer";
 import { Type as TypeToken } from "./Lexer";
@@ -232,6 +237,32 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		}
 		if (expression instanceof Boolean) {
 			return [TypeBool, store];
+		}
+	}
+	if (expression instanceof Function) {
+		const { parameters, body } = expression;
+		let domain;
+		if (!parameters.length) {
+			domain = TypeNone;
+		}
+		else {
+			console.log(parameters[0])
+		}
+		const image = typeOf(body);
+		return [new TypeFunction(domain, image), store];
+	}
+	else if (expression instanceof Apply) {
+		const { target, args } = expression;
+		const { name } = target;
+		const [type, s1] = typeOf(target);
+		const { domain, image } = type;
+		console.log(domain, image);
+		if (!args.length && domain === TypeNone) {
+			return [image, s1];
+		}
+		else {
+			throw new TypeError("Could not deduce type");
+			// return [TypeAny, store];
 		}
 	}
 	else if (expression instanceof Id) {

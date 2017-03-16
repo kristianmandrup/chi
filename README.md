@@ -36,7 +36,7 @@ The second line demonstrates that `1 + 128:i8` is equivalent to `1:i32 + 128:i8`
 255:i8 + 2:i16;
 1 + 128:i8;
 ```
-You can also perform *cast chaining* as demonstrated below. This will result in `2258274`, a 32-bit integer, being cast to 16-bit integer which will then be casted to an 8-bit integer. (This is equivalent to casting the 32-bit integer to an 8-bit integer directly, but there are indeed use cases where casting a value multiple times can turn out to be beneficial.)
+You can also perform *cast chaining* as demonstrated below. This will result in `2258274`, a 32-bit integer, being cast to a 16-bit integer which will then be casted to an 8-bit integer. (This is equivalent to casting the 32-bit integer to an 8-bit integer directly, but there are indeed use cases where casting a value multiple times can turn out to be beneficial.)
 ```js
 2258274:i16:i8
 ```

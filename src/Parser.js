@@ -302,9 +302,20 @@ export default class ChiParser extends Parser {
 					this.CONSUME(LeftParenthesis);
 					const ids = this.OPTION(() => {
 						const firstID = this.SUBRULE(this.Identifier);
+						// const firstTypeHint = this.OPTION2(() => {
+						// 	this.CONSUME(Colon);
+						// 	return this.CONSUME(Type);
+						// });
+						// firstID.typeHint = firstTypeHint;
 						const restIDs = this.MANY(() => {
 							this.CONSUME(Comma);
-							return this.SUBRULE2(this.Identifier);
+							const identifier = this.SUBRULE2(this.Identifier);
+							// const typeHint = this.OPTION3(() => {
+							// 	this.CONSUME2(Colon);
+							// 	return this.CONSUME2(Type);
+							// });
+							// identifier.typeHint = typeHint;
+							return identifier;
 						});
 						return [firstID, ...restIDs];
 					});
