@@ -36,11 +36,15 @@ import {
 	StringType,
 	BoolType,
 	FunctionType,
-	NoneType
+	VoidType,
+	RecursiveType
 } from "./Types";
 import * as lexerImports from "./Lexer";
 import { Type as TypeToken } from "./Lexer";
 const types = Object.values(lexerImports).filter(x => TypeToken.isPrototypeOf(x));
+const infer = (expression, type) => {
+	expression.typeHint = type;
+};
 function toKeyword(type) {
 	return types
 		.find(x => x.TYPE === type)
@@ -112,7 +116,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			}
 			else {
 				if (!identifier.typeHint) {
-					identifier.typeHint = type;
+					infer(identifier, type);
 				}
 				const newStore = new Store(s1);
 				const location = environment.set(name, newStore.nextLocation);
@@ -124,7 +128,17 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			if (e instanceof ReferenceError) {
 				/* Did the user try to use a reference to the same variable? */
 				if (e.reference === name) {
-					throw new ReferenceError(name, `Can not use an undeclared reference for "${name}" within its own definition`);
+					if (boundExpression instanceof FunctionExpression) {
+						/* Functions may lazily refer to themselves */
+						const location = environment.set(name, store.nextLocation);
+						store.set(location, RecursiveType);
+						const [type, s1] = typeOf(boundExpression);
+						infer(identifier, type);
+						return [type, s1];
+					}
+					else {
+						throw new ReferenceError(name, `Can not use an undeclared reference for "${name}" within its own definition`);
+					}
 				}
 			}
 			throw e;
@@ -156,12 +170,12 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (left === StringType && right === StringType) {
-					expression.typeHint = StringType;
+					infer(expression, StringType);
 					return [StringType, s2];
 				}
 				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
 					const greaterDomain = getGreaterDomain(left, right);
-					expression.typeHint = greaterDomain;
+					infer(expression, greaterDomain);
 					return [greaterDomain, s2];
 				}
 				else {
@@ -173,7 +187,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
 					const greaterDomain = getGreaterDomain(left, right);
-					expression.typeHint = greaterDomain;
+					infer(expression, greaterDomain);
 					return [greaterDomain, s2];
 				}
 				else {
@@ -185,7 +199,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
 					const greaterDomain = getGreaterDomain(left, right);
-					expression.typeHint = greaterDomain;
+					infer(expression, greaterDomain);
 					return [greaterDomain, s2];
 				}
 				else {
@@ -197,7 +211,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
 					const greaterDomain = getGreaterDomain(left, right);
-					expression.typeHint = greaterDomain;
+					infer(expression, greaterDomain);
 					return [greaterDomain, s2];
 				}
 				else {
@@ -242,22 +256,29 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		const { parameters, body } = expression;
 		let domain;
 		if (!parameters.length) {
-			domain = NoneType;
+			domain = [VoidType];
 		}
 		else {
 			console.log(parameters[0]);
 		}
-		const image = typeOf(body);
-		return [new FunctionType(domain, image), store];
+		const [image] = typeOf(body);
+		const type = new FunctionType(domain, image);
+		infer(expression, type);
+		return [type, store];
 	}
 	else if (expression instanceof Apply) {
 		const { target, args } = expression;
 		const [type, s1] = typeOf(target);
-		const { domain, image } = type;
-		if (!args.length && domain === NoneType) {
-			return [image, s1];
+		let { domain, image } = type;
+		/* TODO: Type hinting */
+		if (!args.length) {
+			if (domain.length === 1 && domain[0] === VoidType) {
+				infer(target, new FunctionType(domain, image));
+				return [image, s1];
+			}
 		}
 		else {
+			console.log(args, domain)
 			throw new TypeError("Could not deduce type");
 			// return [TypeAny, store];
 		}

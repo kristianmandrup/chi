@@ -1,16 +1,75 @@
 export class Type {}
-export class AnyType extends Type {}
+export class AnyType extends Type {
+	static inspect() {
+		return "any";
+	}
+	static toString() {
+		return this.inspect();
+	}
+}
+export class RecursiveType extends AnyType {
+	static inspect() {
+		return "∞";
+	}
+	static toString() {
+		return this.inspect();
+	}
+}
 export class FunctionType extends AnyType {
 	constructor(domain, image) {
 		super();
 		this.domain = domain;
 		this.image = image;
 	}
+	inspect() {
+		const d = this.domain.length > 1;
+		return `${d ? `[${this.domain.join(", ")}]` : this.domain} => ${this.image}`;
+	}
+	toString() {
+		return this.inspect();
+	}
 }
-export class IntType extends AnyType {}
-export class Int8Type extends IntType {}
-export class Int16Type extends IntType {}
-export class Int32Type extends IntType {}
-export class StringType extends AnyType {}
-export class BoolType extends AnyType {}
-export class NoneType {}
+export class IntType extends AnyType {
+	static toString() {
+		return this.inspect();
+	}
+}
+export class Int8Type extends IntType {
+	inspect() {
+		return "i8";
+	}
+}
+export class Int16Type extends IntType {
+	inspect() {
+		return "i16";
+	}
+}
+export class Int32Type extends IntType {
+	static inspect() {
+		return "i32";
+	}
+}
+export class StringType extends AnyType {
+	static inspect() {
+		return "string";
+	}
+	static toString() {
+		return this.inspect();
+	}
+}
+export class BoolType extends AnyType {
+	static inspect() {
+		return "bool";
+	}
+	static toString() {
+		return this.inspect();
+	}
+}
+export class VoidType {
+	static inspect() {
+		return "void";
+	}
+	static toString() {
+		return "void";
+	}
+}

@@ -221,7 +221,7 @@ export class ClosureValue extends Value {
 	}
 	inspect() {
 		const parameters = this.parameters.map(p => p.name);
-		return `Closure(${parameters.join(", ")})`;
+		return `Closure(${parameters.join(", ")}):(${this.typeHint})`;
 	}
 	toString() {
 		return this.inspect();

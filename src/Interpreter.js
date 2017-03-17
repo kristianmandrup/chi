@@ -147,11 +147,13 @@ export default function interpret(expression, environment = new Environment(), s
 		}
 	}
 	else if (expression instanceof FunctionExpression) {
-		const { parameters, body } = expression;
-		return [new ClosureValue(parameters, body, environment), store];
+		const { parameters, body, typeHint } = expression;
+		const closure = new ClosureValue(parameters, body, environment);
+		closure.typeHint = typeHint;
+		return [closure, store];
 	}
 	else if (expression instanceof Apply) {
-		const { target, args } = expression;
+		const { target, args, typeHint } = expression;
 		const [funV, funStore] = π(target);
 		let argStore = funStore;
 		/* Evaluate the argument list first */
@@ -201,6 +203,7 @@ export default function interpret(expression, environment = new Environment(), s
 					*/
 					const bindings = getBindings();
 					const closure = new ClosureValue(parameters.filter(p => !bindings[p.name]), body, newEnvironment, originalArity);
+					closure.typeHint = typeHint;
 					return [closure, argStore];
 				}
 				++i;
