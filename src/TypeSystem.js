@@ -37,7 +37,8 @@ import {
 	BoolType,
 	FunctionType,
 	VoidType,
-	RecursiveType
+	RecursiveType,
+	AnyType
 } from "./Types";
 import * as lexerImports from "./Lexer";
 import { Type as TypeToken } from "./Lexer";
@@ -254,12 +255,12 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 	}
 	if (expression instanceof FunctionExpression) {
 		const { parameters, body } = expression;
-		let domain;
+		let domain = AnyType;
 		if (!parameters.length) {
 			domain = [VoidType];
 		}
 		else {
-			console.log(parameters[0]);
+			// console.log(parameters[0]);
 		}
 		const [image] = typeOf(body);
 		const type = new FunctionType(domain, image);
