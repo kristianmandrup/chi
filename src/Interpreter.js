@@ -1,6 +1,5 @@
-import { log, err, debug } from "print-log";
-import { ReferenceError, BindError } from "./Error";
-import getTypeOf from "./TypeSystem";
+import { debug } from "print-log";
+import { BindError } from "./Error";
 import {
 	Environment,
 	Store,
@@ -14,29 +13,24 @@ import {
 	Divide,
 	Power,
 	Let,
-	Number,
-	String,
-	Int,
 	Int8,
 	Int16,
 	Int32,
 	Closure,
 	Block,
 	Id,
-	Function,
+	FunctionExpression,
 	Apply,
 	True,
 	False,
-	Boolean,
 	And,
 	Or,
 	Not,
 	Cast
 } from "./InterpreterClasses";
-import { TypeInt, TypeInt8, TypeInt16, TypeInt32, getGreaterDomain } from "./Types";
+import { TypeInt, TypeInt8, TypeInt16, TypeInt32, TypeString } from "./Types";
 export default function interpret(expression, environment = new Environment(), store = new Store()) {
 	const π = (expression, env = environment, s = store) => interpret(expression, env, s);
-	const typeOf = (expression, env = environment, s = store) => getTypeOf(expression, env, s);
 	if (expression instanceof Value) {
 		return [expression, store];
 	}
@@ -53,9 +47,8 @@ export default function interpret(expression, environment = new Environment(), s
 	else if (expression instanceof Operator) {
 		if (expression instanceof BinaryOperator) {
 			if (expression instanceof And) {
-				let [left, s1] = π(expression.left);
-				let [right, s2] = π(expression.right, environment, s1);
-				const [{ value: leftValue }, { value: rightValue }] = [left, right];
+				const [left, s1] = π(expression.left);
+				const [right, s2] = π(expression.right, environment, s1);
 				let result;
 				if (left instanceof False || right instanceof False) {
 					result = new False();
@@ -68,7 +61,6 @@ export default function interpret(expression, environment = new Environment(), s
 			else if (expression instanceof Or) {
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
-				const [{ value: leftValue }, { value: rightValue }] = [left, right];
 				let result;
 				if (left instanceof True || right instanceof True) {
 					result = new True();
@@ -76,7 +68,7 @@ export default function interpret(expression, environment = new Environment(), s
 				else {
 					result = new False();
 				}
-				return [result, s1];
+				return [result, s2];
 			}
 			else if (expression instanceof Add) {
 				const [left, s1] = π(expression.left);
@@ -112,6 +104,9 @@ export default function interpret(expression, environment = new Environment(), s
 						return [Int32.subtract(left, right), s2];
 					}
 				}
+				else {
+					throw new TypeError();
+				}
 			}
 			else if (expression instanceof Multiply) {
 				const [left, s1] = π(expression.left);
@@ -146,10 +141,11 @@ export default function interpret(expression, environment = new Environment(), s
 				}
 			}
 			else if (expression instanceof Power) {
-				const [left, s1] = π(expression.left);
-				const [right, s2] = π(expression.right, environment, s1);
-				const [{ value: leftValue }, { value: rightValue }] = [left, right];
-				return [new Number(null, leftValue ** rightValue), s2];
+				// const [left, s1] = π(expression.left);
+				// const [right, s2] = π(expression.right, environment, s1);
+				// const [{ value: leftValue }, { value: rightValue }] = [left, right];
+				// return [new Number(null, leftValue ** rightValue), s2];
+				throw new Error("Not implemented");
 			}
 		}
 		else if (expression instanceof UnaryOperator) {
@@ -166,7 +162,7 @@ export default function interpret(expression, environment = new Environment(), s
 			}
 		}
 	}
-	else if (expression instanceof Function) {
+	else if (expression instanceof FunctionExpression) {
 		const { parameters, body } = expression;
 		return [new Closure(parameters, body, environment), store];
 	}
@@ -188,19 +184,18 @@ export default function interpret(expression, environment = new Environment(), s
 			const { parameters, body, environment, originalArity } = funV;
 			/* Extend the environment and the store */
 			const newEnvironment = new Environment(environment);
-// 			const argMap = new Map(argArray);
-			function getBindings() {
+			const getBindings = () => {
 				return parameters
 					.map(p => ({
 						[p.name]: newEnvironment.has(p.name)
 					}))
 					.reduce((x, y) => Object.assign(x, y), {});
-			}
-			function isAllBound() {
+			};
+			const isAllBound = () => {
 				const allBound = Object.values(getBindings()).every(p => p);
 				/* Let's just return a new closure! */
 				return allBound;
-			}
+			};
 			let i = 0;
 			for (const parameter of parameters) {
 				const { name } = parameter;
@@ -208,7 +203,6 @@ export default function interpret(expression, environment = new Environment(), s
 				const [, [value]] = argArray[i];
 				newEnvironment.set(name, newLocation);
 				argStore.set(newLocation, value);
-				const isBindingComplete = isAllBound();
 				const isLastFormalParameter = i === originalArity - 1;
 				const isLastProvidedParameter = i === args.length - 1;
 				if (isLastFormalParameter && !isLastProvidedParameter) {
@@ -257,6 +251,6 @@ export default function interpret(expression, environment = new Environment(), s
 	}
 	else {
 		debug(`"Interpreter error: ${expression.constructor.name}" not implemented:`, expression);
-		process.exit(1);
+		throw new Error("Interpretation failed");
 	}
 }

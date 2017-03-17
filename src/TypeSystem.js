@@ -24,12 +24,11 @@ import {
 	Int32,
 	String,
 	Boolean,
-	Function,
+	FunctionExpression,
 	Apply,
 	Cast
 } from "./InterpreterClasses";
 import {
-	Type,
 	TypeInt,
 	TypeInt8,
 	TypeInt16,
@@ -37,7 +36,6 @@ import {
 	TypeString,
 	TypeBool,
 	TypeFunction,
-	TypeAny,
 	TypeNone
 } from "./Types";
 import * as lexerImports from "./Lexer";
@@ -239,24 +237,22 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			return [TypeBool, store];
 		}
 	}
-	if (expression instanceof Function) {
+	if (expression instanceof FunctionExpression) {
 		const { parameters, body } = expression;
 		let domain;
 		if (!parameters.length) {
 			domain = TypeNone;
 		}
 		else {
-			console.log(parameters[0])
+			console.log(parameters[0]);
 		}
 		const image = typeOf(body);
 		return [new TypeFunction(domain, image), store];
 	}
 	else if (expression instanceof Apply) {
 		const { target, args } = expression;
-		const { name } = target;
 		const [type, s1] = typeOf(target);
 		const { domain, image } = type;
-		console.log(domain, image);
 		if (!args.length && domain === TypeNone) {
 			return [image, s1];
 		}
@@ -293,5 +289,5 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 	}
 	err(expression);
 	throw new TypeError(`Unable to determine type of ${expression}`);
-}
+};
 export default getTypeOf;

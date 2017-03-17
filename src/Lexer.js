@@ -1,4 +1,4 @@
-import chevrotain, { createToken, Lexer, LazyToken as Token } from "chevrotain";
+import { Lexer, LazyToken as Token } from "chevrotain";
 import { err } from "print-log";
 import {
 	TypeInt8 as i8,
@@ -208,7 +208,7 @@ export default class {
 		const result = this.internalLexer.tokenize(string);
 		if (result.errors.length) {
 			err("Lex errors detected: ", result.errors);
-			process.exit(1);
+			throw new Error(result.errors);
 		}
 		return result;
 	}

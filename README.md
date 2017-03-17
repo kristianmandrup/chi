@@ -6,16 +6,16 @@ In order to try it out, run:
 
 ```bash
 $ npm i
-$ npm run all
+$ node dist/cli <chi-file>
 ```
-This will tokenize the file `src/example.chi` and then parse and interpret it.
+This will tokenize the file `<chi-file>` and then parse, type-check and interpret it.
 
 **Please do not use chi in production yet. It's still highly experimental and will likely change a lot.**
 ## About chi
 Chi, in its current form, is a meant to be a statically-typed, imperative programming language featuring ideas from the functional programming paradigm. As such, it considers functions to be first-class and performs automatic currying. It uses static scope and supports Unicode tokens. A (potentially incomplete) showcase of features is listed in the next section.
 ## Getting started
 ### Variables
-Bindings allow you to bind a value to a name. Note that there is no significant whitespace and semicolons are *optional*.
+Variables allow you to bind a value to a name. Note that there is no significant whitespace and semicolons are *optional*.
 ```js
 let a = 3;
 let b = 5

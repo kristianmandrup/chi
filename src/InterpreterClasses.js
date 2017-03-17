@@ -1,7 +1,7 @@
 import {
 	TypeInt8,
 	TypeInt16,
-	TypeInt32, 
+	TypeInt32,
 	TypeString,
 	TypeBool
 } from "./Types";
@@ -46,7 +46,7 @@ export class Statement extends Locatable {
 export class Expression extends Locatable {}
 export class Value extends Locatable {
 	constructor(location, primitive) {
-		super(location)
+		super(location);
 		this.value = primitive;
 	}
 }
@@ -79,7 +79,7 @@ export class Let extends Statement {
 		this.expression = expression;
 	}
 }
-export class Function extends Expression {
+export class FunctionExpression extends Expression {
 	constructor(location, parameters, body) {
 		super(location);
 		this.parameters = parameters;
@@ -151,25 +151,28 @@ export class Int extends Number {
 		}
 		return `${this.value[0]}:i${hint}`;
 	}
+	toString() {
+		return this.inspect();
+	}
 }
 export class Int8 extends Int {
 	static compute(left, right, f) {
-		const l = left.to(TypeInt8) 
-		const r = right.to(TypeInt8);
+		left.to(TypeInt8);
+		right.to(TypeInt8);
 		return new Int8(null, Int8Array.from([f(left, right)]));
 	}
 }
 export class Int16 extends Int {
 	static compute(left, right, f) {
-		const l = left.to(TypeInt16) 
-		const r = right.to(TypeInt16);
+		left.to(TypeInt16);
+		right.to(TypeInt16);
 		return new Int16(null, Int16Array.from([f(left, right)]));
 	}
 }
 export class Int32 extends Int {
 	static compute(left, right, f) {
-		const l = left.to(TypeInt32) 
-		const r = right.to(TypeInt32);
+		left.to(TypeInt32);
+		right.to(TypeInt32);
 		return new Int32(null, Int32Array.from([f(left, right)]));
 	}
 }
@@ -185,11 +188,20 @@ export class String extends Value {
 	concatenate(string) {
 		return new String(null, this.value + string.value);
 	}
+	inspect() {
+		return `"${this.value}"`;
+	}
+	toString() {
+		return this.inspect();
+	}
 }
 export class Boolean extends Value {
 	to(type) {
 		if (type === TypeBool) {
 			return this;
+		}
+		else {
+			throw new TypeError(`Can't cast boolean "${this.value}" to anything but bools`);
 		}
 	}
 	inspect() {
@@ -203,6 +215,9 @@ export class Boolean extends Value {
 			throw new Error("Tried to inspect generic boolean");
 		}
 	}
+	toString() {
+		return this.inspect();
+	}
 }
 export class True extends Boolean {}
 export class False extends Boolean {}
@@ -213,5 +228,12 @@ export class Closure extends Value {
 		this.originalArity = originalArity;
 		this.body = body;
 		this.environment = environment;
+	}
+	inspect() {
+		const parameters = this.parameters.map(p => p.name);
+		return `Closure(${parameters.join(", ")})`;
+	}
+	toString() {
+		return this.inspect();
 	}
 }

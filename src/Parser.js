@@ -1,5 +1,4 @@
-import { debug } from "print-log";
-import { Parser, Token } from "chevrotain";
+import { Parser } from "chevrotain";
 import {
 	allTokens,
 	Let,
@@ -25,18 +24,10 @@ import {
 	RightParenthesis,
 	LeftBrace,
 	RightBrace,
-	LeftBracket,
-	RightBracket,
 	FatArrow,
 	Comma,
 	Colon,
-	If,
-	Else,
-	Type,
-	TypeInt8 as TypeInt8Token,
-	TypeInt16 as TypeInt16Token,
-	TypeInt32 as TypeInt32Token,
-	TypeString as TypeStringToken
+	Type
 } from "./Lexer";
 import {
 	Number,
@@ -55,16 +46,10 @@ import {
 	Multiply,
 	Divide,
 	Power,
-	Function,
+	FunctionExpression,
 	Apply,
 	Cast
 } from "./InterpreterClasses";
-import typeOf, {
-	TypeInt8,
-	TypeInt16,
-	TypeInt32,
-	TypeString
-} from "./TypeSystem";
 function parseSuperScript(value) {
 	const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 	return global.Number.parseInt(Array.from(value).map(c => global.String(superscripts.indexOf(c))).join(""));
@@ -327,7 +312,7 @@ export default class ChiParser extends Parser {
 					return block;
 				}
 			}]);
-			return new Function(null, identifiers, body);
+			return new FunctionExpression(null, identifiers, body);
 		});
 		Parser.performSelfAnalysis(this);
 	}
