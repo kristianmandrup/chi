@@ -155,7 +155,6 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			else if (expression instanceof Add) {
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
-				console.log(left, right)
 				if (left === TypeString && right === TypeString) {
 					expression.typeHint = TypeString;
 					return [TypeString, s2];

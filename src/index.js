@@ -18,11 +18,11 @@ export function run(source) {
 		throw new Error(parser.errors);
 	}
 	debug("AST generation successful. AST is shown below.");
+	debug(inspect(ast, {
+		depth: null,
+		showHidden: false
+	}));
 	try {
-		debug(inspect(ast, {
-			depth: null,
-			showHidden: false
-		}));
 		debug("Checking types…");
 		checkTypes(ast);
 		debug("Type check successful.");

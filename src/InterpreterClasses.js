@@ -108,7 +108,7 @@ export class Cast extends Locatable {
 	}
 }
 export class NumberValue extends Value {}
-export class IntValue extends Number {
+export class IntValue extends NumberValue {
 	get number() {
 		return this.value[0];
 	}

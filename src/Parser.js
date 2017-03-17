@@ -29,7 +29,7 @@ import {
 	Type
 } from "./Lexer";
 import {
-	Number,
+	NumberValue,
 	StringValue,
 	Int32Value,
 	TrueValue,
@@ -202,7 +202,7 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("PowerLiteral", () => {
 			const power = this.CONSUME(PowerLiteral);
-			return new Number(power.meta.location, parseSuperScript(power.image));
+			return new NumberValue(power.meta.location, parseSuperScript(power.image));
 		});
 		this.RULE("TermExpression", () => {
 			return this.OR([{
