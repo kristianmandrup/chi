@@ -28,7 +28,7 @@ export function transpileES() {
 *	A gulp stream
 */
 export function lint() {
-	return gulp.src(["**/*.js", "!node_modules/**"])
+	return gulp.src(["**/*.js", "!node_modules/**", "!dist/**"])
 		.pipe(esLint())
 		.pipe(esLint.format());
 }
