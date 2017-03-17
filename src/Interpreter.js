@@ -154,7 +154,7 @@ export default function interpret(expression, environment = new Environment(), s
 	}
 	else if (expression instanceof Apply) {
 		const { target, args, typeHint } = expression;
-		const [funV, funStore] = π(target);
+		const [closure, funStore] = π(target);
 		let argStore = funStore;
 		/* Evaluate the argument list first */
 		const argArray = [];
@@ -163,54 +163,49 @@ export default function interpret(expression, environment = new Environment(), s
 			argStore = newArgStore;
 			argArray.push([arg, [argV, argStore]]);
 		}
-		if (!(funV instanceof ClosureValue)) {
-			throw new TypeError(`Can not invoke "${funV.value}", as it is of type "${funV.constructor.name}"`);
-		}
-		else {
-			const { parameters, body, environment, originalArity } = funV;
-			/* Extend the environment and the store */
-			const newEnvironment = new Environment(environment);
-			const getBindings = () => {
-				return parameters
-					.map(p => ({
-						[p.name]: newEnvironment.has(p.name)
-					}))
-					.reduce((x, y) => Object.assign(x, y), {});
-			};
-			const isAllBound = () => {
-				const allBound = Object.values(getBindings()).every(p => p);
-				/* Let's just return a new closure! */
-				return allBound;
-			};
-			let i = 0;
-			for (const parameter of parameters) {
-				const { name } = parameter;
-				const newLocation = store.nextLocation;
-				const [, [value]] = argArray[i];
-				newEnvironment.set(name, newLocation);
-				argStore.set(newLocation, value);
-				const isLastFormalParameter = i === originalArity - 1;
-				const isLastProvidedParameter = i === args.length - 1;
-				if (isLastFormalParameter && !isLastProvidedParameter) {
-					/* The user called this function with too many parameters */
-					throw new BindError(args, originalArity);
-				}
-				else if (!isLastFormalParameter && isLastProvidedParameter && !isAllBound()) {
-					/*
-					* Note that `isLastFormalParameter` and `i` don't play nice together.
-					* We must use `isAllBound` above to check if the entire context is bound.
-					* We don't have enough arguments to evaluate; let's just return a new closure.
-					*/
-					const bindings = getBindings();
-					const closure = new ClosureValue(parameters.filter(p => !bindings[p.name]), body, newEnvironment, originalArity);
-					closure.typeHint = typeHint;
-					return [closure, argStore];
-				}
-				++i;
+		const { parameters, body, environment, originalArity } = closure;
+		/* Extend the environment and the store */
+		const newEnvironment = new Environment(environment);
+		const getBindings = () => {
+			return parameters
+				.map(p => ({
+					[p.name]: newEnvironment.has(p.name)
+				}))
+				.reduce((x, y) => Object.assign(x, y), {});
+		};
+		const isAllBound = () => {
+			const allBound = Object.values(getBindings()).every(p => p);
+			/* Let's just return a new closure! */
+			return allBound;
+		};
+		let i = 0;
+		for (const parameter of parameters) {
+			const { name } = parameter;
+			const newLocation = store.nextLocation;
+			const [, [value]] = argArray[i];
+			newEnvironment.set(name, newLocation);
+			argStore.set(newLocation, value);
+			const isLastFormalParameter = i === originalArity - 1;
+			const isLastProvidedParameter = i === args.length - 1;
+			if (isLastFormalParameter && !isLastProvidedParameter) {
+				/* The user called this function with too many parameters */
+				throw new BindError(args, originalArity);
 			}
-			/* We have enough arguments now, so let's evaluate. */
-			return π(body, newEnvironment, argStore);
+			else if (!isLastFormalParameter && isLastProvidedParameter && !isAllBound()) {
+				/*
+				* Note that `isLastFormalParameter` and `i` don't play nice together.
+				* We must use `isAllBound` above to check if the entire context is bound.
+				* We don't have enough arguments to evaluate; let's just return a new closure.
+				*/
+				const bindings = getBindings();
+				const closure = new ClosureValue(parameters.filter(p => !bindings[p.name]), body, newEnvironment, originalArity);
+				closure.typeHint = typeHint;
+				return [closure, argStore];
+			}
+			++i;
 		}
+		/* We have enough arguments now, so let's evaluate. */
+		return π(body, newEnvironment, argStore);
 	}
 	else if (expression instanceof Let) {
 		const { identifier, expression: boundExpression } = expression;
