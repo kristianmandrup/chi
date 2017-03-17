@@ -284,6 +284,9 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				// return [TypeAny, store];
 			}
 		}
+		else if (type === RecursiveType) {
+			return [type, s1];
+		}
 		else {
 			throw new TypeError(`Unable to invoke "${target.name}", as it is of type ${toKeyword(type)}.`);
 		}

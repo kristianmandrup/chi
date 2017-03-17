@@ -5,7 +5,8 @@ import {
 	Int16Type as i16,
 	Int32Type as i32,
 	StringType as string,
-	BoolType as bool
+	BoolType as bool,
+	RecursiveType as infinity
 } from "./Types";
 const { SKIPPED, NA } = Lexer;
 export class MetaToken extends Token {
@@ -154,6 +155,10 @@ export class TypeString extends Type {
 	static PATTERN = /string/;
 	static TYPE = string;
 }
+export class TypeRecursive extends Type {
+	static PATTERN = /infinity/;
+	static TYPE = infinity;
+}
 export class Whitespace extends MetaToken {
 	static PATTERN = /\s+/;
 	static GROUP = SKIPPED;
@@ -200,6 +205,7 @@ export const allTokens = [
 	TypeInt32,
 	TypeString,
 	TypeBool,
+	TypeRecursive,
 	Identifier
 ];
 export default class {
