@@ -255,12 +255,12 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 	}
 	if (expression instanceof FunctionExpression) {
 		const { parameters, body } = expression;
-		let domain = [AnyType];
+		let domain;
 		if (!parameters.length) {
 			domain = [VoidType];
 		}
 		else {
-			// console.log(parameters[0]);
+			domain = parameters.map(() => AnyType);
 		}
 		const [image] = typeOf(body);
 		const type = new FunctionType(domain, image);
