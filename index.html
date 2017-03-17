@@ -69,7 +69,8 @@
 	const defaultSource =
 `let a = 1024:i16;
 let b = a:i8;
-a + b`;
+a + b;
+let c = () => () => () => c;`;
 	source.value = defaultSource;
 	const runCode = () => {
 		try {
