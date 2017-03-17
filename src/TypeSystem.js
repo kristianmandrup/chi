@@ -255,7 +255,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 	}
 	if (expression instanceof FunctionExpression) {
 		const { parameters, body } = expression;
-		let domain = AnyType;
+		let domain = [AnyType];
 		if (!parameters.length) {
 			domain = [VoidType];
 		}
