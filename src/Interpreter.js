@@ -13,10 +13,10 @@ import {
 	Divide,
 	Power,
 	Let,
-	Int8,
-	Int16,
-	Int32,
-	Closure,
+	Int8Value,
+	Int16Value,
+	Int32Value,
+	ClosureValue,
 	Block,
 	Id,
 	FunctionExpression,
@@ -76,13 +76,13 @@ export default function interpret(expression, environment = new Environment(), s
 				const { typeHint } = expression;
 				if (TypeInt.isPrototypeOf(typeHint)) {
 					if (typeHint === TypeInt8) {
-						return [Int8.add(left, right), s2];
+						return [Int8Value.add(left, right), s2];
 					}
 					else if (typeHint === TypeInt16) {
-						return [Int16.add(left, right), s2];
+						return [Int16Value.add(left, right), s2];
 					}
 					else if (typeHint === TypeInt32) {
-						return [Int32.add(left, right), s2];
+						return [Int32Value.add(left, right), s2];
 					}
 				}
 				else if (typeHint === TypeString) {
@@ -95,13 +95,13 @@ export default function interpret(expression, environment = new Environment(), s
 				const { typeHint } = expression;
 				if (TypeInt.isPrototypeOf(typeHint)) {
 					if (typeHint === TypeInt8) {
-						return [Int8.subtract(left, right), s2];
+						return [Int8Value.subtract(left, right), s2];
 					}
 					else if (typeHint === TypeInt16) {
-						return [Int16.subtract(left, right), s2];
+						return [Int16Value.subtract(left, right), s2];
 					}
 					else if (typeHint === TypeInt32) {
-						return [Int32.subtract(left, right), s2];
+						return [Int32Value.subtract(left, right), s2];
 					}
 				}
 				else {
@@ -114,13 +114,13 @@ export default function interpret(expression, environment = new Environment(), s
 				const { typeHint } = expression;
 				if (TypeInt.isPrototypeOf(typeHint)) {
 					if (typeHint === TypeInt8) {
-						return [Int8.multiply(left, right), s2];
+						return [Int8Value.multiply(left, right), s2];
 					}
 					else if (typeHint === TypeInt16) {
-						return [Int16.multiply(left, right), s2];
+						return [Int16Value.multiply(left, right), s2];
 					}
 					else if (typeHint === TypeInt32) {
-						return [Int32.multiply(left, right), s2];
+						return [Int32Value.multiply(left, right), s2];
 					}
 				}
 			}
@@ -130,13 +130,13 @@ export default function interpret(expression, environment = new Environment(), s
 				const { typeHint } = expression;
 				if (TypeInt.isPrototypeOf(typeHint)) {
 					if (typeHint === TypeInt8) {
-						return [Int8.divide(left, right), s2];
+						return [Int8Value.divide(left, right), s2];
 					}
 					else if (typeHint === TypeInt16) {
-						return [Int16.divide(left, right), s2];
+						return [Int16Value.divide(left, right), s2];
 					}
 					else if (typeHint === TypeInt32) {
-						return [Int32.divide(left, right), s2];
+						return [Int32Value.divide(left, right), s2];
 					}
 				}
 			}
@@ -164,7 +164,7 @@ export default function interpret(expression, environment = new Environment(), s
 	}
 	else if (expression instanceof FunctionExpression) {
 		const { parameters, body } = expression;
-		return [new Closure(parameters, body, environment), store];
+		return [new ClosureValue(parameters, body, environment), store];
 	}
 	else if (expression instanceof Apply) {
 		const { target, args } = expression;
@@ -177,7 +177,7 @@ export default function interpret(expression, environment = new Environment(), s
 			argStore = newArgStore;
 			argArray.push([arg, [argV, argStore]]);
 		}
-		if (!(funV instanceof Closure)) {
+		if (!(funV instanceof ClosureValue)) {
 			throw new TypeError(`Can not invoke "${funV.value}", as it is of type "${funV.constructor.name}"`);
 		}
 		else {
@@ -216,7 +216,7 @@ export default function interpret(expression, environment = new Environment(), s
 					* We don't have enough arguments to evaluate; let's just return a new closure.
 					*/
 					const bindings = getBindings();
-					const closure = new Closure(parameters.filter(p => !bindings[p.name]), body, newEnvironment, originalArity);
+					const closure = new ClosureValue(parameters.filter(p => !bindings[p.name]), body, newEnvironment, originalArity);
 					return [closure, argStore];
 				}
 				++i;

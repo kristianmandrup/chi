@@ -14,16 +14,16 @@ import {
 	And,
 	Or,
 	Not,
-	Value,
-	Number,
 	Environment,
 	Store,
-	Int,
-	Int8,
-	Int16,
-	Int32,
-	String,
-	Boolean,
+	Value,
+	NumberValue,
+	IntValue,
+	Int8Value,
+	Int16Value,
+	Int32Value,
+	StringValue,
+	BoolValue,
 	FunctionExpression,
 	Apply,
 	Cast
@@ -133,8 +133,8 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 	else if (expression instanceof Operator) {
 		if (expression instanceof BinaryOperator) {
 			if (expression instanceof And) {
-				let [left, s1] = typeOf(expression.left);
-				let [right, s2] = typeOf(expression.right, environment, s1);
+				const [left, s1] = typeOf(expression.left);
+				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (left !== TypeBool || right !== TypeBool) {
 					throw new TypeError(`The operator "∧" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
 				}
@@ -143,8 +143,8 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				}
 			}
 			if (expression instanceof Or) {
-				let [left, s1] = typeOf(expression.left);
-				let [right, s2] = typeOf(expression.right, environment, s1);
+				const [left, s1] = typeOf(expression.left);
+				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (left !== TypeBool || right !== TypeBool) {
 					throw new TypeError(`The operator "∨" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
 				}
@@ -155,7 +155,9 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			else if (expression instanceof Add) {
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
+				console.log(left, right)
 				if (left === TypeString && right === TypeString) {
+					expression.typeHint = TypeString;
 					return [TypeString, s2];
 				}
 				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
@@ -208,7 +210,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			if (expression instanceof Not) {
 				const [operandType, s1] = typeOf(expression.operand);
 				if (operandType !== TypeBool) {
-					throw new TypeError(`The operator "¬" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+					throw new TypeError(`The operator "¬" is not defined for operands of type "${toKeyword(operandType)}".`);
 				}
 				else {
 					return [TypeBool, s1];
@@ -217,23 +219,23 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		}
 	}
 	else if (expression instanceof Value) {
-		if (expression instanceof Number) {
-			if (expression instanceof Int) {
-				if (expression instanceof Int8) {
+		if (expression instanceof NumberValue) {
+			if (expression instanceof IntValue) {
+				if (expression instanceof Int8Value) {
 					return [TypeInt8, store];
 				}
-				if (expression instanceof Int16) {
+				if (expression instanceof Int16Value) {
 					return [TypeInt16, store];
 				}
-				if (expression instanceof Int32) {
+				if (expression instanceof Int32Value) {
 					return [TypeInt32, store];
 				}
 			}
 		}
-		if (expression instanceof String) {
+		if (expression instanceof StringValue) {
 			return [TypeString, store];
 		}
-		if (expression instanceof Boolean) {
+		if (expression instanceof BoolValue) {
 			return [TypeBool, store];
 		}
 	}

@@ -9,7 +9,6 @@ import {
 	PowerLiteral,
 	BooleanLiteral,
 	TrueLiteral,
-	FalseLiteral,
 	AndOperator,
 	OrOperator,
 	NotOperator,
@@ -31,10 +30,10 @@ import {
 } from "./Lexer";
 import {
 	Number,
-	String,
-	Int32,
-	True,
-	False,
+	StringValue,
+	Int32Value,
+	TrueValue,
+	FalseValue,
 	Let as LetStatement,
 	And,
 	Or,
@@ -52,7 +51,7 @@ import {
 } from "./InterpreterClasses";
 function parseSuperScript(value) {
 	const superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-	return global.Number.parseInt(Array.from(value).map(c => global.String(superscripts.indexOf(c))).join(""));
+	return Number.parseInt(Array.from(value).map(c => String(superscripts.indexOf(c))).join(""));
 }
 export default class ChiParser extends Parser {
 	constructor(input) {
@@ -249,25 +248,25 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("NumberLiteral", () => {
 			const number = this.CONSUME(NumberLiteral);
-			const conversion = global.Number(number.image);
-			return new Int32(number.meta.location, new Int32Array([conversion]));
+			const conversion = Number(number.image);
+			return new Int32Value(number.meta.location, new Int32Array([conversion]));
 		});
 		this.RULE("StringLiteral", () => {
 			const string = this.CONSUME(StringLiteral);
-			const conversion = global.String(string
+			const conversion = String(string
 				.image
 				.replace(/^"|"$/g, "")
 				.replace(/\\"/g, `"`)
 			);
-			return new String(string.meta.location, conversion);
+			return new StringValue(string.meta.location, conversion);
 		});
 		this.RULE("BooleanLiteral", () => {
 			const boolean = this.CONSUME(BooleanLiteral);
 			if (boolean instanceof TrueLiteral) {
-				return new True(boolean.meta.location, boolean.image);
+				return new TrueValue(boolean.meta.location, boolean.image);
 			}
-			else if (boolean instanceof FalseLiteral) {
-				return new False(boolean.meta.location, boolean.image);
+			else {
+				return new FalseValue(boolean.meta.location, boolean.image);
 			}
 		});
 		this.RULE("FunctionLiteral", () => {

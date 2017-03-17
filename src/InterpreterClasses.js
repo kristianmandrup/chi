@@ -107,20 +107,20 @@ export class Cast extends Locatable {
 		this.to = to;
 	}
 }
-export class Number extends Value {}
-export class Int extends Number {
+export class NumberValue extends Value {}
+export class IntValue extends Number {
 	get number() {
 		return this.value[0];
 	}
 	to(type) {
 		if (type === TypeInt8) {
-			return new Int8(null, Int8Array.from(this.value));
+			return new Int8Value(null, Int8Array.from(this.value));
 		}
 		else if (type === TypeInt16) {
-			return new Int16(null, Int16Array.from(this.value));
+			return new Int16Value(null, Int16Array.from(this.value));
 		}
 		else if (type === TypeInt32) {
-			return new Int32(null, Int32Array.from(this.value));
+			return new Int32Value(null, Int32Array.from(this.value));
 		}
 		else {
 			throw new Error(`Cast not impemented: ${type}`);
@@ -140,13 +140,13 @@ export class Int extends Number {
 	}
 	inspect() {
 		let hint;
-		if (this instanceof Int8) {
+		if (this instanceof Int8Value) {
 			hint = "8";
 		}
-		else if (this instanceof Int16) {
+		else if (this instanceof Int16Value) {
 			hint = "16";
 		}
-		else if (this instanceof Int32) {
+		else if (this instanceof Int32Value) {
 			hint = "32";
 		}
 		return `${this.value[0]}:i${hint}`;
@@ -155,28 +155,28 @@ export class Int extends Number {
 		return this.inspect();
 	}
 }
-export class Int8 extends Int {
+export class Int8Value extends IntValue {
 	static compute(left, right, f) {
 		left.to(TypeInt8);
 		right.to(TypeInt8);
-		return new Int8(null, Int8Array.from([f(left, right)]));
+		return new Int8Value(null, Int8Array.from([f(left, right)]));
 	}
 }
-export class Int16 extends Int {
+export class Int16Value extends IntValue {
 	static compute(left, right, f) {
 		left.to(TypeInt16);
 		right.to(TypeInt16);
-		return new Int16(null, Int16Array.from([f(left, right)]));
+		return new Int16Value(null, Int16Array.from([f(left, right)]));
 	}
 }
-export class Int32 extends Int {
+export class Int32Value extends IntValue {
 	static compute(left, right, f) {
 		left.to(TypeInt32);
 		right.to(TypeInt32);
-		return new Int32(null, Int32Array.from([f(left, right)]));
+		return new Int32Value(null, Int32Array.from([f(left, right)]));
 	}
 }
-export class String extends Value {
+export class StringValue extends Value {
 	to(type) {
 		if (type === TypeString) {
 			return this;
@@ -186,7 +186,7 @@ export class String extends Value {
 		}
 	}
 	concatenate(string) {
-		return new String(null, this.value + string.value);
+		return new StringValue(null, this.value + string.value);
 	}
 	inspect() {
 		return `"${this.value}"`;
@@ -195,7 +195,7 @@ export class String extends Value {
 		return this.inspect();
 	}
 }
-export class Boolean extends Value {
+export class BoolValue extends Value {
 	to(type) {
 		if (type === TypeBool) {
 			return this;
@@ -205,10 +205,10 @@ export class Boolean extends Value {
 		}
 	}
 	inspect() {
-		if (this instanceof True) {
+		if (this instanceof TrueValue) {
 			return "true";
 		}
-		else if (this instanceof False) {
+		else if (this instanceof FalseValue) {
 			return "false";
 		}
 		else {
@@ -219,9 +219,9 @@ export class Boolean extends Value {
 		return this.inspect();
 	}
 }
-export class True extends Boolean {}
-export class False extends Boolean {}
-export class Closure extends Value {
+export class TrueValue extends BoolValue {}
+export class FalseValue extends BoolValue {}
+export class ClosureValue extends Value {
 	constructor(parameters, body, environment, originalArity = parameters.length) {
 		super(null);
 		this.parameters = parameters;
