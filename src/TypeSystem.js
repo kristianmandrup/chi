@@ -29,14 +29,14 @@ import {
 	Cast
 } from "./InterpreterClasses";
 import {
-	TypeInt,
-	TypeInt8,
-	TypeInt16,
-	TypeInt32,
-	TypeString,
-	TypeBool,
-	TypeFunction,
-	TypeNone
+	IntType,
+	Int8Type,
+	Int16Type,
+	Int32Type,
+	StringType,
+	BoolType,
+	FunctionType,
+	NoneType
 } from "./Types";
 import * as lexerImports from "./Lexer";
 import { Type as TypeToken } from "./Lexer";
@@ -49,12 +49,12 @@ function toKeyword(type) {
 		.replace(/^\/|\/$/g, "");
 }
 export function getGreaterDomain(left, right) {
-	const leftInt8 = left === TypeInt8;
-	const rightInt8 = right === TypeInt8;
-	const leftInt16 = left === TypeInt16;
-	const rightInt16 = right === TypeInt16;
-	const leftInt32 = left === TypeInt32;
-	const rightInt32 = right === TypeInt32;
+	const leftInt8 = left === Int8Type;
+	const rightInt8 = right === Int8Type;
+	const leftInt16 = left === Int16Type;
+	const rightInt16 = right === Int16Type;
+	const leftInt32 = left === Int32Type;
+	const rightInt32 = right === Int32Type;
 	/* Casting Int8 */
 	if (leftInt8 && rightInt8) {
 		return left;
@@ -135,31 +135,31 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			if (expression instanceof And) {
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
-				if (left !== TypeBool || right !== TypeBool) {
+				if (left !== BoolType || right !== BoolType) {
 					throw new TypeError(`The operator "∧" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
 				}
 				else {
-					return [TypeBool, s2];
+					return [BoolType, s2];
 				}
 			}
 			if (expression instanceof Or) {
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
-				if (left !== TypeBool || right !== TypeBool) {
+				if (left !== BoolType || right !== BoolType) {
 					throw new TypeError(`The operator "∨" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
 				}
 				else {
-					return [TypeBool, s2];
+					return [BoolType, s2];
 				}
 			}
 			else if (expression instanceof Add) {
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
-				if (left === TypeString && right === TypeString) {
-					expression.typeHint = TypeString;
-					return [TypeString, s2];
+				if (left === StringType && right === StringType) {
+					expression.typeHint = StringType;
+					return [StringType, s2];
 				}
-				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
+				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
 					const greaterDomain = getGreaterDomain(left, right);
 					expression.typeHint = greaterDomain;
 					return [greaterDomain, s2];
@@ -171,7 +171,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			else if (expression instanceof Subtract) {
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
-				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
+				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
 					const greaterDomain = getGreaterDomain(left, right);
 					expression.typeHint = greaterDomain;
 					return [greaterDomain, s2];
@@ -183,7 +183,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			else if (expression instanceof Multiply) {
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
-				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
+				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
 					const greaterDomain = getGreaterDomain(left, right);
 					expression.typeHint = greaterDomain;
 					return [greaterDomain, s2];
@@ -195,7 +195,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			else if (expression instanceof Divide) {
 				const [left, s1] = typeOf(expression.left);
 				const [right, s2] = typeOf(expression.right, environment, s1);
-				if (TypeInt.isPrototypeOf(left) && TypeInt.isPrototypeOf(right)) {
+				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
 					const greaterDomain = getGreaterDomain(left, right);
 					expression.typeHint = greaterDomain;
 					return [greaterDomain, s2];
@@ -208,11 +208,11 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		if (expression instanceof UnaryOperator) {
 			if (expression instanceof Not) {
 				const [operandType, s1] = typeOf(expression.operand);
-				if (operandType !== TypeBool) {
+				if (operandType !== BoolType) {
 					throw new TypeError(`The operator "¬" is not defined for operands of type "${toKeyword(operandType)}".`);
 				}
 				else {
-					return [TypeBool, s1];
+					return [BoolType, s1];
 				}
 			}
 		}
@@ -221,40 +221,40 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		if (expression instanceof NumberValue) {
 			if (expression instanceof IntValue) {
 				if (expression instanceof Int8Value) {
-					return [TypeInt8, store];
+					return [Int8Type, store];
 				}
 				if (expression instanceof Int16Value) {
-					return [TypeInt16, store];
+					return [Int16Type, store];
 				}
 				if (expression instanceof Int32Value) {
-					return [TypeInt32, store];
+					return [Int32Type, store];
 				}
 			}
 		}
 		if (expression instanceof StringValue) {
-			return [TypeString, store];
+			return [StringType, store];
 		}
 		if (expression instanceof BoolValue) {
-			return [TypeBool, store];
+			return [BoolType, store];
 		}
 	}
 	if (expression instanceof FunctionExpression) {
 		const { parameters, body } = expression;
 		let domain;
 		if (!parameters.length) {
-			domain = TypeNone;
+			domain = NoneType;
 		}
 		else {
 			console.log(parameters[0]);
 		}
 		const image = typeOf(body);
-		return [new TypeFunction(domain, image), store];
+		return [new FunctionType(domain, image), store];
 	}
 	else if (expression instanceof Apply) {
 		const { target, args } = expression;
 		const [type, s1] = typeOf(target);
 		const { domain, image } = type;
-		if (!args.length && domain === TypeNone) {
+		if (!args.length && domain === NoneType) {
 			return [image, s1];
 		}
 		else {
@@ -279,7 +279,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			return [type, s1];
 		}
 		else {
-			if (TypeInt.isPrototypeOf(type) && TypeInt.isPrototypeOf(targetType)) {
+			if (IntType.isPrototypeOf(type) && IntType.isPrototypeOf(targetType)) {
 				/* Allow dynamic casting for integers */
 				return [type, s1];
 			}

@@ -1,11 +1,11 @@
 import { Lexer, LazyToken as Token } from "chevrotain";
 import { err } from "print-log";
 import {
-	TypeInt8 as i8,
-	TypeInt16 as i16,
-	TypeInt32 as i32,
-	TypeString as string,
-	TypeBool as bool
+	Int8Type as i8,
+	Int16Type as i16,
+	Int32Type as i32,
+	StringType as string,
+	BoolType as bool
 } from "./Types";
 const { SKIPPED, NA } = Lexer;
 export class MetaToken extends Token {

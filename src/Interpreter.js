@@ -27,7 +27,13 @@ import {
 	Not,
 	Cast
 } from "./InterpreterClasses";
-import { TypeInt, TypeInt8, TypeInt16, TypeInt32, TypeString } from "./Types";
+import {
+	IntType,
+	Int8Type,
+	Int16Type,
+	Int32Type,
+	StringType
+} from "./Types";
 export default function interpret(expression, environment = new Environment(), store = new Store()) {
 	const π = (expression, env = environment, s = store) => interpret(expression, env, s);
 	if (expression instanceof Value) {
@@ -59,18 +65,18 @@ export default function interpret(expression, environment = new Environment(), s
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
 				const { typeHint } = expression;
-				if (TypeInt.isPrototypeOf(typeHint)) {
-					if (typeHint === TypeInt8) {
+				if (IntType.isPrototypeOf(typeHint)) {
+					if (typeHint === Int8Type) {
 						return [Int8Value.add(left, right), s2];
 					}
-					else if (typeHint === TypeInt16) {
+					else if (typeHint === Int16Type) {
 						return [Int16Value.add(left, right), s2];
 					}
-					else if (typeHint === TypeInt32) {
+					else if (typeHint === Int32Type) {
 						return [Int32Value.add(left, right), s2];
 					}
 				}
-				else if (typeHint === TypeString) {
+				else if (typeHint === StringType) {
 					return [left.concatenate(right), s2];
 				}
 			}
@@ -78,14 +84,14 @@ export default function interpret(expression, environment = new Environment(), s
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
 				const { typeHint } = expression;
-				if (TypeInt.isPrototypeOf(typeHint)) {
-					if (typeHint === TypeInt8) {
+				if (IntType.isPrototypeOf(typeHint)) {
+					if (typeHint === Int8Type) {
 						return [Int8Value.subtract(left, right), s2];
 					}
-					else if (typeHint === TypeInt16) {
+					else if (typeHint === Int16Type) {
 						return [Int16Value.subtract(left, right), s2];
 					}
-					else if (typeHint === TypeInt32) {
+					else if (typeHint === Int32Type) {
 						return [Int32Value.subtract(left, right), s2];
 					}
 				}
@@ -97,14 +103,14 @@ export default function interpret(expression, environment = new Environment(), s
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
 				const { typeHint } = expression;
-				if (TypeInt.isPrototypeOf(typeHint)) {
-					if (typeHint === TypeInt8) {
+				if (IntType.isPrototypeOf(typeHint)) {
+					if (typeHint === Int8Type) {
 						return [Int8Value.multiply(left, right), s2];
 					}
-					else if (typeHint === TypeInt16) {
+					else if (typeHint === Int16Type) {
 						return [Int16Value.multiply(left, right), s2];
 					}
-					else if (typeHint === TypeInt32) {
+					else if (typeHint === Int32Type) {
 						return [Int32Value.multiply(left, right), s2];
 					}
 				}
@@ -113,14 +119,14 @@ export default function interpret(expression, environment = new Environment(), s
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
 				const { typeHint } = expression;
-				if (TypeInt.isPrototypeOf(typeHint)) {
-					if (typeHint === TypeInt8) {
+				if (IntType.isPrototypeOf(typeHint)) {
+					if (typeHint === Int8Type) {
 						return [Int8Value.divide(left, right), s2];
 					}
-					else if (typeHint === TypeInt16) {
+					else if (typeHint === Int16Type) {
 						return [Int16Value.divide(left, right), s2];
 					}
-					else if (typeHint === TypeInt32) {
+					else if (typeHint === Int32Type) {
 						return [Int32Value.divide(left, right), s2];
 					}
 				}

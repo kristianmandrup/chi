@@ -1,9 +1,9 @@
 import {
-	TypeInt8,
-	TypeInt16,
-	TypeInt32,
-	TypeString,
-	TypeBool
+	Int8Type,
+	Int16Type,
+	Int32Type,
+	StringType,
+	BoolType
 } from "./Types";
 export const LEFT = Symbol("Left-associative");
 export const RIGHT = Symbol("Right-associative");
@@ -113,13 +113,13 @@ export class IntValue extends NumberValue {
 		return this.value[0];
 	}
 	to(type) {
-		if (type === TypeInt8) {
+		if (type === Int8Type) {
 			return new Int8Value(null, Int8Array.from(this.value));
 		}
-		else if (type === TypeInt16) {
+		else if (type === Int16Type) {
 			return new Int16Value(null, Int16Array.from(this.value));
 		}
-		else if (type === TypeInt32) {
+		else if (type === Int32Type) {
 			return new Int32Value(null, Int32Array.from(this.value));
 		}
 		else {
@@ -157,28 +157,28 @@ export class IntValue extends NumberValue {
 }
 export class Int8Value extends IntValue {
 	static compute(left, right, f) {
-		left.to(TypeInt8);
-		right.to(TypeInt8);
+		left.to(Int8Type);
+		right.to(Int8Type);
 		return new Int8Value(null, Int8Array.from([f(left, right)]));
 	}
 }
 export class Int16Value extends IntValue {
 	static compute(left, right, f) {
-		left.to(TypeInt16);
-		right.to(TypeInt16);
+		left.to(Int16Type);
+		right.to(Int16Type);
 		return new Int16Value(null, Int16Array.from([f(left, right)]));
 	}
 }
 export class Int32Value extends IntValue {
 	static compute(left, right, f) {
-		left.to(TypeInt32);
-		right.to(TypeInt32);
+		left.to(Int32Type);
+		right.to(Int32Type);
 		return new Int32Value(null, Int32Array.from([f(left, right)]));
 	}
 }
 export class StringValue extends Value {
 	to(type) {
-		if (type === TypeString) {
+		if (type === StringType) {
 			return this;
 		}
 		else {
@@ -197,7 +197,7 @@ export class StringValue extends Value {
 }
 export class BoolValue extends Value {
 	to(type) {
-		if (type === TypeBool) {
+		if (type === BoolType) {
 			return this;
 		}
 		else {
