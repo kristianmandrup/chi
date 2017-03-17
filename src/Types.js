@@ -29,24 +29,29 @@ export class FunctionType extends AnyType {
 		return this.inspect();
 	}
 }
-export class IntType extends AnyType {
+export class IntType extends AnyType {}
+export class Int8Type extends IntType {
+	static inspect() {
+		return "i8";
+	}
 	static toString() {
 		return this.inspect();
 	}
 }
-export class Int8Type extends IntType {
-	inspect() {
-		return "i8";
-	}
-}
 export class Int16Type extends IntType {
-	inspect() {
+	static inspect() {
 		return "i16";
+	}
+	static toString() {
+		return this.inspect();
 	}
 }
 export class Int32Type extends IntType {
 	static inspect() {
 		return "i32";
+	}
+	static toString() {
+		return this.inspect();
 	}
 }
 export class StringType extends AnyType {

@@ -269,18 +269,23 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 	else if (expression instanceof Apply) {
 		const { target, args } = expression;
 		const [type, s1] = typeOf(target);
-		let { domain, image } = type;
-		/* TODO: Type hinting */
-		if (!args.length) {
-			if (domain.length === 1 && domain[0] === VoidType) {
-				infer(target, new FunctionType(domain, image));
-				return [image, s1];
+		if (type instanceof FunctionType) {
+			let { domain, image } = type;
+			/* TODO: Type hinting */
+			if (!args.length) {
+				if (domain.length === 1 && domain[0] === VoidType) {
+					infer(target, new FunctionType(domain, image));
+					return [image, s1];
+				}
+			}
+			else {
+				console.log(args, domain)
+				throw new TypeError("Could not deduce type");
+				// return [TypeAny, store];
 			}
 		}
 		else {
-			console.log(args, domain)
-			throw new TypeError("Could not deduce type");
-			// return [TypeAny, store];
+			throw new TypeError(`Unable to invoke "${target.name}", as it is of type ${toKeyword(type)}.`);
 		}
 	}
 	else if (expression instanceof Id) {
