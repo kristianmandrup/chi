@@ -8,7 +8,6 @@ import {
 	StringLiteral,
 	PowerLiteral,
 	BooleanLiteral,
-	TrueLiteral,
 	AndOperator,
 	OrOperator,
 	NotOperator,
@@ -32,8 +31,7 @@ import {
 	NumberValue,
 	StringValue,
 	Int32Value,
-	TrueValue,
-	FalseValue,
+	BoolValue,
 	Let as LetStatement,
 	And,
 	Or,
@@ -262,12 +260,7 @@ export default class ChiParser extends Parser {
 		});
 		this.RULE("BooleanLiteral", () => {
 			const boolean = this.CONSUME(BooleanLiteral);
-			if (boolean instanceof TrueLiteral) {
-				return new TrueValue(boolean.meta.location, boolean.image);
-			}
-			else {
-				return new FalseValue(boolean.meta.location, boolean.image);
-			}
+			return new BoolValue(boolean.meta.location, boolean.image === "true" ? true : false);
 		});
 		this.RULE("FunctionLiteral", () => {
 			const identifiers = this.OR([{

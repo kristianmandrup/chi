@@ -205,22 +205,12 @@ export class BoolValue extends Value {
 		}
 	}
 	inspect() {
-		if (this instanceof TrueValue) {
-			return "true";
-		}
-		else if (this instanceof FalseValue) {
-			return "false";
-		}
-		else {
-			throw new Error("Tried to inspect generic boolean");
-		}
+		return this.value;
 	}
 	toString() {
 		return this.inspect();
 	}
 }
-export class TrueValue extends BoolValue {}
-export class FalseValue extends BoolValue {}
 export class ClosureValue extends Value {
 	constructor(parameters, body, environment, originalArity = parameters.length) {
 		super(null);

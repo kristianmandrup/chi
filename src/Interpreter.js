@@ -17,12 +17,11 @@ import {
 	Int16Value,
 	Int32Value,
 	ClosureValue,
+	BoolValue,
 	Block,
 	Id,
 	FunctionExpression,
 	Apply,
-	True,
-	False,
 	And,
 	Or,
 	Not,
@@ -49,26 +48,12 @@ export default function interpret(expression, environment = new Environment(), s
 			if (expression instanceof And) {
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
-				let result;
-				if (left instanceof False || right instanceof False) {
-					result = new False();
-				}
-				else {
-					result = new True();
-				}
-				return [result, s2];
+				return [new BoolValue(null, left.value && right.value), s2];
 			}
 			else if (expression instanceof Or) {
 				const [left, s1] = π(expression.left);
 				const [right, s2] = π(expression.right, environment, s1);
-				let result;
-				if (left instanceof True || right instanceof True) {
-					result = new True();
-				}
-				else {
-					result = new False();
-				}
-				return [result, s2];
+				return [new BoolValue(null, left.value || right.value), s2];
 			}
 			else if (expression instanceof Add) {
 				const [left, s1] = π(expression.left);
@@ -150,15 +135,8 @@ export default function interpret(expression, environment = new Environment(), s
 		}
 		else if (expression instanceof UnaryOperator) {
 			if (expression instanceof Not) {
-				const [value, s1] = π(expression.operand);
-				let result;
-				if (value instanceof False) {
-					result = new True();
-				}
-				else {
-					result = new False();
-				}
-				return [result, s1];
+				const [result, s1] = π(expression.operand);
+				return [new BoolValue(null, !result.value), s1];
 			}
 		}
 	}
