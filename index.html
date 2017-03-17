@@ -5,88 +5,80 @@
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0;
-		background-color: hsl(0, 0%, 10%);
-		color: #00ff00;
-		font-size: 1.3rem;
-		font-family: monospace;
+	}
+	html {
+		height: 100%;
+		position: relative;
+	}
+	body {
+		min-height: 100%;
 	}
 	[screen] {
-		display: flex;
-		height: 100%;
-	}
-	[screen] [source]::before, [screen] [source]::after, [screen] [console]::before {
-		top: 0.5rem;
-		right: 0.5rem;
-		position: absolute;
-		color: hsl(0, 0%, 50%);
-		font-size: 0.8rem;
-		z-index: 1;
-	}
-	[screen] [source]::before {
-		content: "(Source code)";
-	}
-	[screen] [console]::before {
-		content: "(Chi console)";
-	}
-	[screen] [source]::after {
-		content: "Press Ctrl + ↲ to run.";
-		top: auto;
-		bottom: 0.5rem;
-	}
-	[source] {
-		position: relative;
-		flex: 1.5;
-	}
-	[console] {
-		flex: 1;
-	}
-	[console] textarea {
-		background-color: black;
-	}
-	[source] textarea, [screen] textarea {
-		position: relative;
 		width: 100%;
 		height: 100%;
-		border: none;
-		border-right: 1px solid hsl(0, 0%, 15%);
-		padding: 0.5rem;
+		display: flex;
 	}
-	[source] textarea:focus, [screen] textarea:focus {
+	[screen] [source] {
+		height: 100%;
+		flex: 1.65;
+	}
+	[screen] [console] {
+		flex: 1;
+	}
+	[screen] [console] textarea {
+		width: 100%;
+		height: 100%;
+		background-color: black;
+		color: white;
+		border: none;
+		font-size: 1.4rem;
+		padding: 1rem;
+	}
+	[screen] [console] textarea:focus {
 		outline: none;
 	}
 </style>
 <div screen>
-	<div source>
-		<textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
-	</div>
-	<div console>
+	<div source></div>
+	<div console tabIndex="-1">
 		<textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" readonly></textarea>
 	</div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
 <script src="dist/index.js"></script>
 <script>
-	const source = document.querySelector("[source] textarea");
+	let timer;
 	const consoleWindow = document.querySelector("[console] textarea");
 	const defaultSource =
 `let a = 1024:i16;
 let b = a:i8;
 a + b;
 let c = () => () => () => c;`;
-	source.value = defaultSource;
 	const runCode = () => {
 		try {
-			const { result } = chi.run(source.value);
+			const { result } = chi.run(editor.getValue());
 			consoleWindow.value = result;
 		}
 		catch (e) {
 			consoleWindow.value = e;
 		}
 	}
-	runCode();
-	addEventListener("keydown", e => {
-		const { code, ctrlKey } = e;
-		if (ctrlKey && code === "Enter") {
-			runCode();
-		}
+	const startTimeout = () => {
+		clearTimeout(timer);
+		timer = setTimeout(runCode, 0);
+	}
+	const editor = ace.edit(document.querySelector("[source]"));
+	const session = editor.getSession();
+	editor.setTheme("ace/theme/monokai");
+	editor.setOptions({
+		fontSize: "1.5rem"
 	});
+	session.setMode("ace/mode/javascript");
+	session.setUseWorker(false);
+	editor.on("input", startTimeout);
+	editor.container.style.lineHeight = 1.25;
+	editor.renderer.updateFontSize();
+	session.setUseWrapMode(true);
+	session.setWrapLimitRange();
+	editor.setValue(defaultSource, 1);
 </script>
