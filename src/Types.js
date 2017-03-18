@@ -8,10 +8,14 @@ export class AnyType extends Type {
 	}
 }
 export class RecursiveType extends AnyType {
-	static inspect() {
-		return "∞";
+	constructor(identifier) {
+		super();
+		this.identifier = identifier;
 	}
-	static toString() {
+	inspect() {
+		return `∞ {${this.identifier.name}}`;
+	}
+	toString() {
 		return this.inspect();
 	}
 }

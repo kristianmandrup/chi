@@ -118,6 +118,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				const map = parameters.map((parameter, i) => {
 					return valueMatchesType(parameter, domain[i], env);
 				});
+				err("This part hasn't been debugged yet");
 				return map.every(v => v);
 			}
 		}
@@ -159,7 +160,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 					if (boundExpression instanceof FunctionExpression) {
 						/* Functions may lazily refer to themselves */
 						const location = environment.set(name, store.nextLocation);
-						store.set(location, RecursiveType);
+						store.set(location, new RecursiveType(identifier));
 						const [type, s1] = typeOf(boundExpression);
 						infer(identifier, type);
 						return [type, s1];
@@ -303,27 +304,51 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		const { target, args } = expression;
 		const [type, s1] = typeOf(target);
 		if (type instanceof FunctionType) {
-			let { domain, image } = type;
-			/* TODO: More type hinting */
+			const { domain, image } = type;
+			const isVoidFunction = domain.length === 1 && domain[0] === VoidType;
 			if (!args.length) {
-				if (domain.length === 1 && domain[0] === VoidType) {
-					const functionType = new FunctionType(domain, image);
-					infer(target, functionType);
-					return [functionType, s1];
+				if (isVoidFunction) {
+					infer(expression, image);
+					return [image, s1];
 				}
 				else {
 					throw new TypeError(`Tried to invoke ${target.name ? `"${target.name}"` : "closure"} without any arguments`);
 				}
 			}
 			else {
-				if (domain.length === 1 && domain[0] === VoidType) {
-					throw new TypeError(`Tried to pass ${args.length} superfluous argument${args.length === 1 ? "" : "s"} to ${target.name}`);
+				if (isVoidFunction) {
+					const [actualType] = typeOf(target);
+					throw new TypeError(`Tried to pass ${args.length} more argument${args.length === 1 ? "" : "s"} to ${target.name || "closure"} of type "${actualType}" although none were expected`);
 				}
 				else {
 					let currentStore = s1;
 					args.forEach((arg, i) => {
 						const [argumentType, s2] = typeOf(arg, environment, currentStore);
-						const expectedType = domain[i];
+						let expectedType = domain[i];
+						if (!expectedType) {
+							/* Parameter must be somewhere in image! */
+							let node = type;
+							let found = false;
+							let currentIndex = 0;
+							while (!found) {
+								const { domain, image } = node;
+								if (domain) {
+									/* Can we even find the index in this node? */
+									if (i > currentIndex + domain.length - 1) {
+										/* No, go to next node */
+										currentIndex += domain.length;
+										node = image;
+									}
+									else {
+										expectedType = domain[currentIndex - i];
+										found = true;
+									}
+								}
+								else {
+									throw new Error(`More arguments specified than formal parameters available`);
+								}
+							}
+						}
 						currentStore = s2;
 						if (valueMatchesType(arg, expectedType, environment)) {
 							infer(arg, argumentType);
@@ -345,9 +370,11 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				}
 			}
 		}
-		else if (type === RecursiveType) {
-			infer(expression, type);
-			return [type, s1];
+		else if (type instanceof RecursiveType) {
+			const { typeHint } = type.identifier;
+			const resultType = typeHint.image;
+			infer(expression, resultType);
+			return [resultType, s1];
 		}
 		else {
 			throw new TypeError(`Unable to invoke ${target.name ? `"${target.name}"` : "intermediate value"}, as it is of type "${toKeyword(type)}".`);
