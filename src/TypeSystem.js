@@ -262,7 +262,12 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		else {
 			domain = parameters.map(() => AnyType);
 		}
-		const [image] = typeOf(body);
+		const newEnv = new Environment(environment);
+		for (const { name } of parameters) {
+			const location = newEnv.set(name, store.nextLocation);
+			store.set(location, AnyType);
+		}
+		const [image] = typeOf(body, newEnv);
 		const type = new FunctionType(domain, image);
 		infer(expression, type);
 		return [type, store];
