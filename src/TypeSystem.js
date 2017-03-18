@@ -303,6 +303,54 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 	else if (expression instanceof Apply) {
 		const { target, args } = expression;
 		const [type, s1] = typeOf(target);
+		function checkArguments(domain, image) {
+			let currentStore = s1;
+			args.forEach((arg, i) => {
+				const [argumentType, s2] = typeOf(arg, environment, currentStore);
+				let expectedType = domain[i];
+				if (!expectedType) {
+					/* Parameter must be somewhere in image! */
+					let node = type;
+					let found = false;
+					let currentIndex = 0;
+					while (!found) {
+						const { domain, image } = node;
+						if (domain) {
+							/* Can we even find the index in this node? */
+							if (i > currentIndex + domain.length - 1) {
+								/* No, go to next node */
+								currentIndex += domain.length;
+								node = image;
+							}
+							else {
+								expectedType = domain[currentIndex - i];
+								found = true;
+							}
+						}
+						else {
+							throw new Error(`More arguments specified than formal parameters available in invocation of ${target.name ? `"${target.name}"` : "closure"}`);
+						}
+					}
+				}
+				currentStore = s2;
+				if (valueMatchesType(arg, expectedType, environment)) {
+					infer(arg, argumentType);
+				}
+				else {
+					throw new TypeError(`Argument "${arg}" of type "${toKeyword(argumentType)}" doesn't match expected type "${toKeyword(expectedType)}"`);
+				}
+			});
+			if (args.length < domain.length) {
+				const restDomain = domain.slice(args.length);
+				const type = new FunctionType(restDomain, image);
+				infer(expression, type);
+				return [type, currentStore];
+			}
+			else {
+				infer(expression, image);
+				return [image, currentStore];
+			}
+		}
 		if (type instanceof FunctionType) {
 			const { domain, image } = type;
 			const isVoidFunction = domain.length === 1 && domain[0] === VoidType;
@@ -318,61 +366,17 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			else {
 				if (isVoidFunction) {
 					const [actualType] = typeOf(target);
-					throw new TypeError(`Tried to pass ${args.length} more argument${args.length === 1 ? "" : "s"} to ${target.name || "closure"} of type "${actualType}" although none were expected`);
+					throw new TypeError(`Tried to pass ${args.length} more argument${args.length === 1 ? "" : "s"} to ${target.name ? `"${target.name}"` : "closure"} of type "${actualType}" although none were expected`);
 				}
 				else {
-					let currentStore = s1;
-					args.forEach((arg, i) => {
-						const [argumentType, s2] = typeOf(arg, environment, currentStore);
-						let expectedType = domain[i];
-						if (!expectedType) {
-							/* Parameter must be somewhere in image! */
-							let node = type;
-							let found = false;
-							let currentIndex = 0;
-							while (!found) {
-								const { domain, image } = node;
-								if (domain) {
-									/* Can we even find the index in this node? */
-									if (i > currentIndex + domain.length - 1) {
-										/* No, go to next node */
-										currentIndex += domain.length;
-										node = image;
-									}
-									else {
-										expectedType = domain[currentIndex - i];
-										found = true;
-									}
-								}
-								else {
-									throw new Error(`More arguments specified than formal parameters available`);
-								}
-							}
-						}
-						currentStore = s2;
-						if (valueMatchesType(arg, expectedType, environment)) {
-							infer(arg, argumentType);
-						}
-						else {
-							throw new TypeError(`Argument "${arg}" of type "${toKeyword(argumentType)}" doesn't match expected type "${toKeyword(expectedType)}"`);
-						}
-					});
-					if (args.length < domain.length) {
-						const restDomain = domain.slice(args.length);
-						const type = new FunctionType(restDomain, image);
-						infer(expression, type);
-						return [type, currentStore];
-					}
-					else {
-						infer(expression, image);
-						return [image, currentStore];
-					}
+					return checkArguments(domain, image);
 				}
 			}
 		}
 		else if (type instanceof RecursiveType) {
 			const { typeHint } = type.identifier;
 			const resultType = typeHint.image;
+			checkArguments(typeHint.image, typeHint.image);
 			infer(expression, resultType);
 			return [resultType, s1];
 		}
