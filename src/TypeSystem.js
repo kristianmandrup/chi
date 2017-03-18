@@ -346,6 +346,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			}
 		}
 		else if (type === RecursiveType) {
+			infer(expression, type);
 			return [type, s1];
 		}
 		else {
