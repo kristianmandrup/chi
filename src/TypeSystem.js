@@ -96,6 +96,34 @@ export function getGreaterDomain(left, right) {
 }
 const getTypeOf = (expression, environment = new Environment(), store = new Store()) => {
 	const typeOf = (expression, env = environment, s = store) => getTypeOf(expression, env, s);
+	/* TODO: RecursiveType check necessary */
+	function valueMatchesType(value, type, env = environment) {
+		const trivialChecks = (
+			type === AnyType
+			|| (
+				value instanceof Int8Value && type === Int8Type
+				|| value instanceof Int16Value && type === Int16Type
+				|| value instanceof Int32Value && type === Int32Type
+				|| value instanceof StringValue && type === StringType
+				|| value instanceof BoolValue && type === BoolType
+			)
+		);
+		if (trivialChecks) {
+			return trivialChecks;
+		}
+		if (value instanceof FunctionExpression) {
+			if (type instanceof FunctionType) {
+				const { domain } = type;
+				const { parameters } = value;
+				const map = parameters.map((parameter, i) => {
+					return valueMatchesType(typeOf(parameter, env), domain[i]);
+				});
+				console.log(map);
+				return map.every(v => v);
+			}
+		}
+		return false;
+	}
 	if (expression instanceof Block) {
 		const { content } = expression;
 		let result, s = store;
@@ -299,9 +327,28 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 					return [deducedType, s2];
 				}
 				else {
-					console.log(args, domain);
-					throw new TypeError("Could not deduce type");
-					// return [TypeAny, store];
+					let currentStore = s1;
+					args.forEach((arg, i) => {
+						const [argumentType, s2] = typeOf(arg, environment, currentStore);
+						const expectedType = domain[i];
+						currentStore = s2;
+						if (valueMatchesType(argumentType, expectedType)) {
+							infer(arg, argumentType);
+						}
+						else {
+							throw new TypeError(`Argument "${arg}" of type "${toKeyword(argumentType)}" doesn't match expected type "${toKeyword(expectedType)}"`);
+						}
+					});
+					if (args.length < domain.length) {
+						const restDomain = domain.slice(args.length);
+						const type = new FunctionType(restDomain, image);
+						infer(expression, type);
+						return [type, currentStore];
+					}
+					else {
+						infer(expression, image);
+						return [image, currentStore];
+					}
 				}
 			}
 		}
