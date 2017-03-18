@@ -95,9 +95,6 @@ export default function interpret(expression, environment = new Environment(), s
 						return [Int32Value.subtract(left, right), s2];
 					}
 				}
-				else {
-					throw new TypeError();
-				}
 			}
 			else if (expression instanceof Multiply) {
 				const [left, s1] = π(expression.left);
@@ -163,9 +160,9 @@ export default function interpret(expression, environment = new Environment(), s
 			argStore = newArgStore;
 			argArray.push([arg, [argV, argStore]]);
 		}
-		const { parameters, body, environment, originalArity } = closure;
+		const { parameters, body, environment: closureEnvironment, originalArity } = closure;
 		/* Extend the environment and the store */
-		const newEnvironment = new Environment(environment);
+		const newEnvironment = new Environment(closureEnvironment);
 		const getBindings = () => {
 			return parameters
 				.map(p => ({

@@ -280,14 +280,29 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			/* TODO: Type hinting */
 			if (!args.length) {
 				if (domain.length === 1 && domain[0] === VoidType) {
-					infer(target, new FunctionType(domain, image));
-					return [image, s1];
+					const functionType = new FunctionType(domain, image);
+					infer(target, functionType);
+					return [functionType, s1];
+				}
+				else {
+					throw new TypeError(`Tried to invoke "${target.name}" without any arguments`);
 				}
 			}
 			else {
-				console.log(args, domain)
-				throw new TypeError("Could not deduce type");
-				// return [TypeAny, store];
+				if (domain.length === 1 && domain[0] === VoidType) {
+					throw new TypeError(`Tried to pass ${args.length} superfluous arguments to ${target.name}`);
+				}
+				else if (domain.length === 1 && domain[0] === AnyType) {
+					const [argType, s2] = typeOf(args[0]);
+					const deducedType = new FunctionType([argType], image);
+					infer(target, deducedType);
+					return [deducedType, s2];
+				}
+				else {
+					console.log(args, domain)
+					throw new TypeError("Could not deduce type");
+					// return [TypeAny, store];
+				}
 			}
 		}
 		else if (type === RecursiveType) {

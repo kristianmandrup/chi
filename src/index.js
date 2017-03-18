@@ -25,7 +25,11 @@ export function run(source) {
 	try {
 		debug("Checking types…");
 		checkTypes(ast);
-		debug("Type check successful.");
+		debug("Type check successful. Enhanced AST is shown below.");
+		debug(inspect(ast, {
+			depth: null,
+			showHidden: false
+		}));
 		debug("Interpreting…");
 		const [result, store] = interpret(ast);
 		debug(store);
