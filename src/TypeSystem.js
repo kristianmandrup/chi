@@ -308,6 +308,14 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		const [type, s1] = typeOf(target);
 		function checkArguments(domain, image) {
 			let currentStore = s1;
+			if (!args.length) {
+				const isVoidFunction = domain.length === 1 && domain[0] === VoidType;
+				/* No arguments were specified. Is this legal? */
+				if (!isVoidFunction) {
+					/* Nope, it's not. */
+					throw new TypeError(`Tried to invoke ${target.name ? `"${target.name}"` : "closure"} without any arguments, although at least one formal parameter is expected.`);
+				}
+			}
 			args.forEach((arg, i) => {
 				const [argumentType, s2] = typeOf(arg, environment, currentStore);
 				let expectedType = domain[i];
