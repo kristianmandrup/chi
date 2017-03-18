@@ -116,9 +116,8 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				const { domain } = type;
 				const { parameters } = value;
 				const map = parameters.map((parameter, i) => {
-					return valueMatchesType(typeOf(parameter, env), domain[i]);
+					return valueMatchesType(parameter, domain[i], env);
 				});
-				console.log(map);
 				return map.every(v => v);
 			}
 		}
@@ -313,18 +312,12 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 					return [functionType, s1];
 				}
 				else {
-					throw new TypeError(`Tried to invoke ${`"${target.name}"` || "closure"} without any arguments`);
+					throw new TypeError(`Tried to invoke ${target.name ? `"${target.name}"` : "closure"} without any arguments`);
 				}
 			}
 			else {
 				if (domain.length === 1 && domain[0] === VoidType) {
 					throw new TypeError(`Tried to pass ${args.length} superfluous argument${args.length === 1 ? "" : "s"} to ${target.name}`);
-				}
-				else if (domain.length === 1 && domain[0] === AnyType) {
-					const [argType, s2] = typeOf(args[0]);
-					const deducedType = new FunctionType([argType], image);
-					infer(target, deducedType);
-					return [deducedType, s2];
 				}
 				else {
 					let currentStore = s1;
@@ -332,7 +325,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 						const [argumentType, s2] = typeOf(arg, environment, currentStore);
 						const expectedType = domain[i];
 						currentStore = s2;
-						if (valueMatchesType(argumentType, expectedType)) {
+						if (valueMatchesType(arg, expectedType, environment)) {
 							infer(arg, argumentType);
 						}
 						else {
@@ -356,7 +349,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			return [type, s1];
 		}
 		else {
-			throw new TypeError(`Unable to invoke "${target.name}", as it is of type ${toKeyword(type)}.`);
+			throw new TypeError(`Unable to invoke ${target.name ? `"${target.name}"` : "intermediate value"}, as it is of type "${toKeyword(type)}".`);
 		}
 	}
 	else if (expression instanceof Id) {
