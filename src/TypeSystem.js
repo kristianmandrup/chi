@@ -277,7 +277,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		const [type, s1] = typeOf(target);
 		if (type instanceof FunctionType) {
 			let { domain, image } = type;
-			/* TODO: Type hinting */
+			/* TODO: More type hinting */
 			if (!args.length) {
 				if (domain.length === 1 && domain[0] === VoidType) {
 					const functionType = new FunctionType(domain, image);
@@ -285,12 +285,12 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 					return [functionType, s1];
 				}
 				else {
-					throw new TypeError(`Tried to invoke "${target.name}" without any arguments`);
+					throw new TypeError(`Tried to invoke ${`"${target.name}"` || "closure"} without any arguments`);
 				}
 			}
 			else {
 				if (domain.length === 1 && domain[0] === VoidType) {
-					throw new TypeError(`Tried to pass ${args.length} superfluous arguments to ${target.name}`);
+					throw new TypeError(`Tried to pass ${args.length} superfluous argument${args.length === 1 ? "" : "s"} to ${target.name}`);
 				}
 				else if (domain.length === 1 && domain[0] === AnyType) {
 					const [argType, s2] = typeOf(args[0]);
@@ -299,7 +299,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 					return [deducedType, s2];
 				}
 				else {
-					console.log(args, domain)
+					console.log(args, domain);
 					throw new TypeError("Could not deduce type");
 					// return [TypeAny, store];
 				}
