@@ -212,10 +212,9 @@ export class BoolValue extends Value {
 	}
 }
 export class ClosureValue extends Value {
-	constructor(parameters, body, environment, originalArity = parameters.length) {
+	constructor(parameters, body, environment) {
 		super(null);
 		this.parameters = parameters;
-		this.originalArity = originalArity;
 		this.body = body;
 		this.environment = environment;
 	}

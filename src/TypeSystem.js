@@ -1,4 +1,4 @@
-import { debug, err } from "print-log";
+import { debug, err, warn } from "print-log";
 import { ReferenceError } from "./Error";
 import {
 	Block,
@@ -44,6 +44,9 @@ import * as lexerImports from "./Lexer";
 import { Type as TypeToken } from "./Lexer";
 const types = Object.values(lexerImports).filter(x => TypeToken.isPrototypeOf(x));
 const infer = (expression, type) => {
+	if (expression.typeHint) {
+		warn(`Overwriting type hint ${expression.typeHint} of ${expression} with ${type}`);
+	}
 	expression.typeHint = type;
 };
 function toKeyword(type) {
@@ -311,9 +314,8 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 				if (!expectedType) {
 					/* Parameter must be somewhere in image! */
 					let node = type;
-					let found = false;
 					let currentIndex = 0;
-					while (!found) {
+					while (true) {
 						const { domain, image } = node;
 						if (domain) {
 							/* Can we even find the index in this node? */
@@ -321,10 +323,11 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 								/* No, go to next node */
 								currentIndex += domain.length;
 								node = image;
+								continue;
 							}
 							else {
 								expectedType = domain[currentIndex - i];
-								found = true;
+								break;
 							}
 						}
 						else {
@@ -374,11 +377,21 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			}
 		}
 		else if (type instanceof RecursiveType) {
-			const { typeHint } = type.identifier;
-			const resultType = typeHint.image;
-			checkArguments(typeHint.image, typeHint.image);
-			infer(expression, resultType);
-			return [resultType, s1];
+			if ((target instanceof Apply)) {
+				throw new Error("Not implemented");
+				// return [resultType, s1];
+			}
+			else {
+				const { typeHint } = type.identifier;
+				const resultType = typeHint.image;
+				const [newType, newStore] = checkArguments(typeHint.domain, typeHint.image);
+				if (!expression.typeHint) {
+					/* TODO: Can this happen? */
+					warn("Yes, it can happen!");
+					infer(expression, resultType);
+				}
+				return [newType, newStore];
+			}
 		}
 		else {
 			throw new TypeError(`Unable to invoke ${target.name ? `"${target.name}"` : "intermediate value"}, as it is of type "${toKeyword(type)}".`);

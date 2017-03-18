@@ -5,9 +5,3 @@ export class ReferenceError extends Error {
 		this.reference = reference;
 	}
 }
-export class BindError extends Error {
-	constructor(parameters, originalArity) {
-		const tooMany = parameters.length - originalArity;
-		super(`Unable to apply a parameter list consisting of "${parameters.length}" parameters to a function whose original arity was only "${originalArity}" parameters long. Remove the last ${`${tooMany === 1 ? "parameter" : `"${tooMany}" parameters`}`}.`);
-	}
-}

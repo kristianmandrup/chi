@@ -1,5 +1,4 @@
 import { debug } from "print-log";
-import { BindError } from "./Error";
 import {
 	Environment,
 	Store,
@@ -154,15 +153,21 @@ export default function interpret(expression, environment = new Environment(), s
 		const [closure, funStore] = π(target);
 		let argStore = funStore;
 		/* Evaluate the argument list first */
-		const argArray = [];
+		const argMap = new Map();
 		for (const arg of args) {
 			const [argV, newArgStore] = π(arg, environment, argStore);
 			argStore = newArgStore;
-			argArray.push([arg, [argV, argStore]]);
+			argMap.set(arg, argV);
 		}
-		const { parameters, body, environment: closureEnvironment, originalArity } = closure;
+		const { parameters, body, environment: closureEnvironment } = closure;
 		/* Extend the environment and the store */
 		const newEnvironment = new Environment(closureEnvironment);
+		/* This happens before any binding occurs. If the current environment already contains a binding for a certain name, but the parameters use the same name, too, we must remove the environment binding in the new environment first. */
+		for (const { name } of parameters) {
+			if (newEnvironment.has(name)) {
+				newEnvironment.delete(name);
+			}
+		}
 		const getBindings = () => {
 			return parameters
 				.map(p => ({
@@ -170,39 +175,29 @@ export default function interpret(expression, environment = new Environment(), s
 				}))
 				.reduce((x, y) => Object.assign(x, y), {});
 		};
-		const isAllBound = () => {
-			const allBound = Object.values(getBindings()).every(p => p);
-			/* Let's just return a new closure! */
-			return allBound;
-		};
-		let i = 0;
-		for (const parameter of parameters) {
-			const { name } = parameter;
+		/* First, bind all parameters to the arguments */
+		for (let i = 0; i < args.length; ++i) {
+			const arg = args[i];
+			const parameter = parameters[i];
+			/* Get the specified argument */
+			const value = argMap.get(arg);
+			/* Set up new environment, bind parameter to argument value */
 			const newLocation = store.nextLocation;
-			const [, [value]] = argArray[i];
-			newEnvironment.set(name, newLocation);
+			newEnvironment.set(parameter.name, newLocation);
 			argStore.set(newLocation, value);
-			const isLastFormalParameter = i === originalArity - 1;
-			const isLastProvidedParameter = i === args.length - 1;
-			if (isLastFormalParameter && !isLastProvidedParameter) {
-				/* The user called this function with too many parameters */
-				throw new BindError(args, originalArity);
-			}
-			else if (!isLastFormalParameter && isLastProvidedParameter && !isAllBound()) {
-				/*
-				* Note that `isLastFormalParameter` and `i` don't play nice together.
-				* We must use `isAllBound` above to check if the entire context is bound.
-				* We don't have enough arguments to evaluate; let's just return a new closure.
-				*/
-				const bindings = getBindings();
-				const closure = new ClosureValue(parameters.filter(p => !bindings[p.name]), body, newEnvironment, originalArity);
-				closure.typeHint = typeHint;
-				return [closure, argStore];
-			}
-			++i;
 		}
-		/* We have enough arguments now, so let's evaluate. */
-		return π(body, newEnvironment, argStore);
+		if (args.length < parameters.length) {
+			/* Underspecified: Return a new closure */
+			const bindings = getBindings();
+			const closure = new ClosureValue(parameters.filter(p => !bindings[p.name]), body, newEnvironment);
+			/* Forward the expression's type hint to the closure (TODO: This is a a dummy value, fix this) */
+			closure.typeHint = typeHint;
+			return [closure, argStore];
+		}
+		else {
+			/* Return the value */
+			return π(body, newEnvironment, argStore);
+		}
 	}
 	else if (expression instanceof Let) {
 		const { identifier, expression: boundExpression } = expression;
