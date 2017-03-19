@@ -1,5 +1,5 @@
 import Lexer from "./Lexer";
-import Parser from "./Parser";
+import Parser, { transform } from "./Parser";
 import interpret from "./Interpreter";
 import checkTypes from "./TypeSystem";
 import { debug, err } from "print-log";
@@ -12,11 +12,17 @@ export function run(source) {
 	debug(tokens);
 	debug("Parsing tokens…");
 	const parser = new Parser(tokens);
-	const ast = parser.Block();
+	const cst = parser.block();
 	if (parser.errors.length) {
 		err("Parsing failed.");
 		throw new Error(parser.errors);
 	}
+	debug("CST generation successful. CST is shown below.");
+	debug(inspect(cst, {
+		depth: null,
+		showHidden: false
+	}));
+	const ast = transform(cst);
 	debug("AST generation successful. AST is shown below.");
 	debug(inspect(ast, {
 		depth: null,

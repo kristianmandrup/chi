@@ -1,4 +1,5 @@
 import { Parser } from "chevrotain";
+import { debug } from "print-log";
 import {
 	allTokens,
 	Let,
@@ -53,259 +54,419 @@ function parseSuperScript(value) {
 }
 export default class ChiParser extends Parser {
 	constructor(input) {
-		super(input, allTokens);
-		this.RULE("Block", () => {
-			const statements = this.MANY(() => {
-				return this.SUBRULE(this.Statement);
+		allTokens.forEach(x => x.tokenName = x.name);
+		super(input, allTokens, {
+			outputCst: true
+		});
+		this.RULE("block", () => this.MANY(() => this.SUBRULE(this.statement)));
+		this.RULE("statement", () => {
+			this.OR({
+				DEF: [{
+					ALT: () => this.SUBRULE(this.expression)
+				}, {
+					ALT: () => this.SUBRULE(this.letStatement)
+				}]
 			});
-			return new Block(null, ...statements);
+			this.OPTION({
+				DEF: () => this.CONSUME(Semicolon)
+			});
 		});
-		this.RULE("Statement", () => {
-			const value = this.OR([{
-				ALT: () => this.SUBRULE(this.Expression)
-			}, {
-				ALT: () => this.SUBRULE(this.LetStatement)
-			}]);
-			this.OPTION(() => this.CONSUME(Semicolon));
-			return value;
-		});
-		this.RULE("Expression", () => {
-			const and = this.SUBRULE(this.AndExpression);
-			const invocationArgs = this.MANY(() => {
+		this.RULE("expression", () => {
+			this.SUBRULE(this.andExpression);
+			this.MANY(() => {
 				this.CONSUME(LeftParenthesis);
-				const args = this.OPTION2(() => {
-					const firstExpression = this.SUBRULE2(this.AndExpression);
-					const restExpressions = this.MANY2(() => {
+				this.OPTION2(() => {
+					this.SUBRULE2(this.andExpression);
+					this.MANY2(() => {
 						this.CONSUME(Comma);
-						return this.SUBRULE3(this.AndExpression);
+						this.SUBRULE3(this.andExpression);
 					});
-					return [firstExpression, ...(restExpressions || [])];
 				});
 				this.CONSUME(RightParenthesis);
-				return args || [];
 			});
-			const apply = [and, ...invocationArgs].reduce((r1, r2) => {
-				return new Apply(null, r1, r2);
-			});
-			return invocationArgs.length ? apply : and;
 		});
-		this.RULE("AndExpression", () => {
-			const lhs = this.SUBRULE(this.OrExpression);
-			const rhs = this.MANY(() => {
+		this.RULE("andExpression", () => {
+			this.SUBRULE(this.orExpression);
+			this.MANY(() => {
 				this.CONSUME(AndOperator);
-				return this.SUBRULE2(this.OrExpression);
+				this.SUBRULE2(this.orExpression);
 			});
-			if (!rhs.length) {
-				return lhs;
-			}
-			else {
-				return [lhs, ...rhs].reduce((r1, r2) => {
-					return new And(null, r1, r2);
-				});
-			}
 		});
-		this.RULE("OrExpression", () => {
-			const lhs = this.SUBRULE(this.AdditiveExpression);
-			const rhs = this.MANY(() => {
+		this.RULE("orExpression", () => {
+			this.SUBRULE(this.additiveExpression);
+			this.MANY(() => {
 				this.CONSUME(OrOperator);
-				return this.SUBRULE2(this.AdditiveExpression);
-			});
-			if (!rhs.length) {
-				return lhs;
-			}
-			else {
-				return [lhs, ...rhs].reduce((r1, r2) => {
-					return new Or(null, r1, r2);
-				});
-			}
-		});
-		this.RULE("AdditiveExpression", () => {
-			const operators = [];
-			const lhs = this.SUBRULE(this.MultiplicativeExpression);
-			const rhs = this.MANY(() => {
-				operators.push(this.CONSUME(AdditiveOperator));
-				return this.SUBRULE2(this.MultiplicativeExpression);
-			});
-			return [lhs, ...rhs].reduce((r1, r2, i) => {
-				const operator = operators[i - 1];
-				if (operator instanceof Plus) {
-					return new Add(null, r1, r2);
-				}
-				else if (operator instanceof Minus) {
-					return new Subtract(null, r1, r2);
-				}
+				this.SUBRULE2(this.additiveExpression);
 			});
 		});
-		this.RULE("MultiplicativeExpression", () => {
-			const operators = [];
-			const lhs = this.SUBRULE(this.NotExpression);
-			const rhs = this.MANY(() => {
-				operators.push(this.CONSUME(MultiplicativeOperator));
-				return this.SUBRULE2(this.NotExpression);
-			});
-			return [lhs, ...rhs].reduce((r1, r2, i) => {
-				const operator = operators[i - 1];
-				if (operator instanceof Asterisk) {
-					return new Multiply(null, r1, r2);
-				}
-				else if (operator instanceof Slash) {
-					return new Divide(null, r1, r2);
-				}
+		this.RULE("additiveExpression", () => {
+			this.SUBRULE(this.multiplicativeExpression);
+			this.MANY(() => {
+				this.CONSUME(AdditiveOperator);
+				this.SUBRULE2(this.multiplicativeExpression);
 			});
 		});
-		this.RULE("NotExpression", () => {
-			const operand = this.OPTION(() => {
-				this.CONSUME(NotOperator);
-				return this.SUBRULE(this.PowerExpression)
+		this.RULE("multiplicativeExpression", () => {
+			this.SUBRULE(this.notExpression);
+			this.MANY(() => {
+				this.CONSUME(MultiplicativeOperator);
+				this.SUBRULE2(this.notExpression);
 			});
-			if (!operand) {
-				return this.SUBRULE2(this.PowerExpression);
-			}
-			else {
-				return new Not(null, operand);
-			}
 		});
-		this.RULE("PowerExpression", () => {
-			const base = this.SUBRULE(this.CastExpression);
-			const exponent = this.OPTION(() => {
-				return this.SUBRULE2(this.PowerLiteral);
+		this.RULE("notExpression", () => {
+			this.OPTION({
+				DEF: () => this.CONSUME(NotOperator)
 			});
-			if (exponent) {
-				return new Power(null, base, exponent);
-			}
-			else {
-				return base;
-			}
+			this.SUBRULE(this.powerExpression);
+			// if (!operand) {
+			// 	return this.SUBRULE2(this.powerExpression);
+			// }
 		});
-		this.RULE("CastExpression", () => {
-			const value = this.SUBRULE(this.TermExpression);
-			const types = this.MANY(() => {
+		this.RULE("powerExpression", () => {
+			this.SUBRULE(this.castExpression);
+			this.OPTION({
+				DEF: () => this.SUBRULE2(this.powerLiteral)
+			});
+		});
+		this.RULE("castExpression", () => {
+			this.SUBRULE(this.termExpression);
+			this.MANY(() => {
 				this.CONSUME(Colon);
-				return this.OR([{
-					ALT: () => this.SUBRULE(this.Identifier)
+				this.OR({
+					DEF: [{
+						ALT: () => this.SUBRULE(this.identifier)
+					}, {
+						ALT: () => this.SUBRULE(this.type)
+					}]
+				});
+			});
+		});
+		this.RULE("type", () => {
+			this.CONSUME(Type);
+		});
+		this.RULE("powerLiteral", () => {
+			this.CONSUME(PowerLiteral);
+		});
+		this.RULE("termExpression", () => {
+			this.OR({
+				DEF: [{
+					ALT: () => this.SUBRULE(this.literal)
+				}, {
+					ALT: () => this.SUBRULE(this.identifier)
+				}, {
+					ALT: () => this.SUBRULE(this.parenthesisExpression)
+				}]
+			});
+		});
+		this.RULE("identifier", () => {
+			this.CONSUME(Identifier);
+		});
+		this.RULE("parenthesisExpression", () => {
+			this.CONSUME(LeftParenthesis);
+			this.SUBRULE(this.expression);
+			this.CONSUME(RightParenthesis);
+		});
+		this.RULE("letStatement", () => {
+			this.CONSUME(Let);
+			this.SUBRULE(this.identifier);
+			this.OPTION({
+				DEF: () => {
+					this.CONSUME(Colon);
+					this.SUBRULE(this.type);
+				}
+			});
+			// identifier.typeHint = typeToken && typeToken.constructor.TYPE || null;
+			this.CONSUME(Equals);
+			this.SUBRULE(this.expression);
+		});
+		this.RULE("literal", () => {
+			return this.OR({
+				DEF: [{
+					ALT: () => this.SUBRULE(this.numberLiteral)
+				}, {
+					ALT: () => this.SUBRULE(this.stringLiteral)
+				}, {
+					ALT: () => this.SUBRULE(this.booleanLiteral)
+				}, {
+					ALT: () => this.SUBRULE(this.functionLiteral)
+				}]
+			});
+		});
+		this.RULE("numberLiteral", () => {
+			this.CONSUME(NumberLiteral);
+		});
+		this.RULE("stringLiteral", () => {
+			this.CONSUME(StringLiteral);
+		});
+		this.RULE("booleanLiteral", () => {
+			this.CONSUME(BooleanLiteral);
+		});
+		this.RULE("functionLiteral", () => {
+			this.OR({
+				DEF: [{
+					/* Argument list contains parentheses */
+					ALT: () => {
+						this.CONSUME(LeftParenthesis);
+						this.OPTION({
+							DEF: () => {
+								this.SUBRULE(this.identifier);
+								this.MANY(() => {
+									this.CONSUME(Comma);
+									this.SUBRULE2(this.identifier);
+								});
+							}
+						});
+						this.CONSUME(RightParenthesis);
+					}
+				}, {
+					/* Argument list is just an identifier */
+					ALT: () => [this.SUBRULE3(this.identifier)]
+				}]
+			});
+			this.CONSUME(FatArrow);
+			this.OR2({
+				DEF: [{
+					ALT: () => this.SUBRULE(this.expression)
 				}, {
 					ALT: () => {
-						const type = this.SUBRULE(this.Type);
-						return type.constructor.TYPE;
+						this.CONSUME(LeftBrace);
+						this.SUBRULE2(this.block);
+						this.CONSUME(RightBrace);
 					}
-				}]);
-			});
-			return [value, ...types].reduce((x, y) => {
-				return new Cast(null, x, y);
+				}]
 			});
 		});
-		this.RULE("Type", () => {
-			const token = this.CONSUME(Type);
-			return token;
-		});
-		this.RULE("PowerLiteral", () => {
-			const power = this.CONSUME(PowerLiteral);
-			return new NumberValue(power.meta.location, parseSuperScript(power.image));
-		});
-		this.RULE("TermExpression", () => {
-			return this.OR([{
-				ALT: () => this.SUBRULE(this.Literal)
-			}, {
-				ALT: () => this.SUBRULE(this.Identifier)
-			}, {
-				ALT: () => this.SUBRULE(this.ParenthesisExpression)
-			}]);
-		});
-		this.RULE("Identifier", () => {
-			const identifier = this.CONSUME(Identifier);
-			return new Id(identifier.meta.location, identifier.image);
-		});
-		this.RULE("ParenthesisExpression", () => {
-			this.CONSUME(LeftParenthesis);
-			const expression = this.SUBRULE(this.Expression);
-			this.CONSUME(RightParenthesis);
-			return expression;
-		});
-		this.RULE("LetStatement", () => {
-			this.CONSUME(Let);
-			const identifier = this.SUBRULE(this.Identifier);
-			const typeToken = this.OPTION(() => {
-				this.CONSUME(Colon);
-				return this.SUBRULE(this.Type);
+		Parser.performSelfAnalysis(this);
+	}
+}
+/**
+* Recursively transforms a CST to an AST
+* @param {object} cst
+*	A concrete syntax tree
+* @returns {object}
+*	An abstract syntax tree
+*/
+export function transform(cst) {
+	const { children } = cst;
+	switch (cst.name) {
+		case "block": {
+			const { statement } = children;
+			const statements = statement.map(transform);
+			return new Block(null, ...statements);
+		}
+		case "statement": {
+			const { expression, letStatement } = children;
+			for (const statement of [expression, letStatement]) {
+				if (statement.length) {
+					return statement.map(transform)[0];
+				}
+			}
+		}
+		case "letStatement": {
+			const { Let: [letToken], identifier, expression, type } = children;
+			const [hint] = type.map(transform);
+			const [id] = identifier.map(transform);
+			/* TODO: Move this to the static type checker */
+			id.typeHint = hint && hint.constructor.TYPE || null;
+			const [argument] = expression.map(transform);
+			const { start } = letToken.meta.location;
+			const { end } = argument.location;
+			const location = {
+				start,
+				end
+			};
+			return new LetStatement(location, id, argument);
+		}
+		case "expression": {
+			const { andExpression } = children;
+			const [and, ...invocationArgs] = andExpression.map(transform);
+			const apply = [and, ...invocationArgs].reduce((r1, r2) => {
+				const { start } = r1.location;
+				const { end } = r2.location;
+				const location = {
+					start,
+					end
+				};
+				return new Apply(location, r1, r2)
 			});
-			identifier.typeHint = typeToken && typeToken.constructor.TYPE || null;
-			this.CONSUME(Equals);
-			const argument = this.SUBRULE(this.Expression);
-			return new LetStatement(identifier.location, identifier, argument);
-		});
-		this.RULE("Literal", () => {
-			return this.OR([{
-				ALT: () => this.SUBRULE(this.NumberLiteral)
-			}, {
-				ALT: () => this.SUBRULE(this.StringLiteral)
-			}, {
-				ALT: () => this.SUBRULE(this.BooleanLiteral)
-			}, {
-				ALT: () => this.SUBRULE(this.FunctionLiteral)
-			}]);
-		});
-		this.RULE("NumberLiteral", () => {
-			const number = this.CONSUME(NumberLiteral);
+			return invocationArgs.length ? apply : and;
+		}
+		case "andExpression": {
+			const { orExpression } = children;
+			const [lhs, ...rhs] = orExpression.map(transform);
+			return !rhs.length ? lhs : [lhs, ...rhs].reduce((r1, r2) => {
+				const { start } = r1.location;
+				const { end } = r2.location;
+				const location = {
+					start,
+					end
+				};
+				return new And(location, r1, r2);
+			});
+		}
+		case "orExpression": {
+			const { additiveExpression } = children;
+			const [lhs, ...rhs] = additiveExpression.map(transform);
+			return !rhs.length ? lhs : [lhs, ...rhs].reduce((r1, r2) => {
+				const { start } = r1.location;
+				const { end } = r2.location;
+				const location = {
+					start,
+					end
+				};
+				return new Or(location, r1, r2);
+			});
+		}
+		case "additiveExpression": {
+			const { multiplicativeExpression, AdditiveOperator: operators } = children;
+			const [lhs, ...rhs] = multiplicativeExpression.map(transform);
+			return [lhs, ...rhs].reduce((r1, r2, i) => {
+				const operator = operators[i - 1];
+				const { start } = r1.location;
+				const { end } = r2.location;
+				const location = {
+					start,
+					end
+				};
+				if (operator instanceof Plus) {
+					return new Add(location, r1, r2);
+				}
+				else if (operator instanceof Minus) {
+					return new Subtract(location, r1, r2);
+				}
+			});
+		}
+		case "multiplicativeExpression": {
+			const { notExpression, MultiplicativeOperator: operators } = children;
+			const [lhs, ...rhs] = notExpression.map(transform);
+			return [lhs, ...rhs].reduce((r1, r2, i) => {
+				const operator = operators[i - 1];
+				const { start } = r1.location;
+				const { end } = r2.location;
+				const location = {
+					start,
+					end
+				};
+				if (operator instanceof Asterisk) {
+					return new Multiply(location, r1, r2);
+				}
+				else if (operator instanceof Slash) {
+					return new Divide(location, r1, r2);
+				}
+			});
+		}
+		case "notExpression": {
+			const { powerExpression, NotOperator: [operator] } = children;
+			const [operand] = powerExpression.map(transform);
+			const start = !operator ? operand.location.start : operator.meta.location.start;
+			const end = operand.location.end;
+			const location = {
+				start,
+				end
+			};
+			return !operator ? operand : new Not(location, operand);
+		}
+		case "powerExpression": {
+			const { castExpression, powerLiteral } = children;
+			const [base] = castExpression.map(transform);
+			const [exponent] = powerLiteral.map(transform);
+			const { start } = base.location;
+			const end = !exponent ? base.location.end : exponent.location.end;
+			const location = {
+				start,
+				end
+			};
+			return !exponent ? base : new Power(location, base, exponent);
+		}
+		case "castExpression": {
+			const { termExpression, identifier, type } = children;
+			const [value] = termExpression.map(transform);
+			const typeTransforms = type.map(transform);
+			const runtimeTypes = typeTransforms.map(t => t.constructor.TYPE);
+			const { start } = value.location;
+			const [lastType] = typeTransforms.slice(-1);
+			const end = !type.length ? value.location.end : lastType.meta.location.end;
+			const location = {
+				start,
+				end
+			};
+			if (identifier.length) {
+				throw new Error("Custom casts not implemented yet");
+			}
+			return [value, ...runtimeTypes].reduce((x, y) => {
+				return new Cast(location, x, y);
+			});
+		}
+		case "termExpression": {
+			const { literal, identifier, parenthesisExpression } = children;
+			for (const term of [literal, identifier, parenthesisExpression]) {
+				if (term.length) {
+					return term.map(transform)[0];
+				}
+			}
+		}
+		case "literal": {
+			const { numberLiteral, stringLiteral, booleanLiteral, functionLiteral } = children;
+			for (const literal of [numberLiteral, stringLiteral, booleanLiteral, functionLiteral]) {
+				if (literal.length) {
+					return literal.map(transform)[0];
+				}
+			}
+		}
+		case "numberLiteral": {
+			const { NumberLiteral: [number] } = children;
 			const conversion = Number(number.image);
 			return new Int32Value(number.meta.location, new Int32Array([conversion]));
-		});
-		this.RULE("StringLiteral", () => {
-			const string = this.CONSUME(StringLiteral);
-			const conversion = String(string
+		}
+		case "stringLiteral": {
+			const { StringLiteral: [string] } = children;
+			const conversion = String(
+				string
 				.image
 				.replace(/^"|"$/g, "")
 				.replace(/\\"/g, `"`)
 			);
 			return new StringValue(string.meta.location, conversion);
-		});
-		this.RULE("BooleanLiteral", () => {
-			const boolean = this.CONSUME(BooleanLiteral);
-			return new BoolValue(boolean.meta.location, boolean.image === "true" ? true : false);
-		});
-		this.RULE("FunctionLiteral", () => {
-			const identifiers = this.OR([{
-				/* Argument list contains parentheses */
-				ALT: () => {
-					this.CONSUME(LeftParenthesis);
-					const ids = this.OPTION(() => {
-						const firstID = this.SUBRULE(this.Identifier);
-						// const firstTypeHint = this.OPTION2(() => {
-						// 	this.CONSUME(Colon);
-						// 	return this.CONSUME(Type);
-						// });
-						// firstID.typeHint = firstTypeHint;
-						const restIDs = this.MANY(() => {
-							this.CONSUME(Comma);
-							const identifier = this.SUBRULE2(this.Identifier);
-							// const typeHint = this.OPTION3(() => {
-							// 	this.CONSUME2(Colon);
-							// 	return this.CONSUME2(Type);
-							// });
-							// identifier.typeHint = typeHint;
-							return identifier;
-						});
-						return [firstID, ...restIDs];
-					});
-					this.CONSUME(RightParenthesis);
-					return ids || [];
+		}
+		case "booleanLiteral": {
+			const { BooleanLiteral: [bool] } = children;
+			return new BoolValue(bool.meta.location, bool.image === "true");
+		}
+		case "functionLiteral": {
+			let body;
+			const { LeftParenthesis: [parenLeft], identifier, expression, block, RightParenthesis: [parenRight] } = children;
+			const parameters = identifier.map(transform);
+			for (const bodyType of [expression, block]) {
+				if (bodyType.length) {
+					[body] = bodyType.map(transform);
 				}
-			}, {
-				/* Argument list is just an identifier */
-				ALT: () => [this.SUBRULE3(this.Identifier)]
-			}]);
-			this.CONSUME(FatArrow);
-			const body = this.OR2([{
-				ALT: () => this.SUBRULE(this.Expression)
-			}, {
-				ALT: () => {
-					this.CONSUME(LeftBrace);
-					const block = this.SUBRULE2(this.Block);
-					this.CONSUME(RightBrace);
-					return block;
-				}
-			}]);
-			return new FunctionExpression(null, identifiers, body);
-		});
-		Parser.performSelfAnalysis(this);
+			}
+			const { start } = parenLeft && parenLeft.meta.location || parameters[0].location;
+			const { end } = parenRight && parenRight.meta.location || parameters[0].location;
+			const location = {
+				start,
+				end
+			};
+			return new FunctionExpression(location, parameters, body);
+		}
+		case "identifier": {
+			const { Identifier: [identifier] } = children;
+			return new Id(identifier.meta.location, identifier.image);
+		}
+		case "parenthesisExpression": {
+			const { expression } = children;
+			return expression.map(transform)[0];
+		}
+		case "type": {
+			const { Type: [type] } = children;
+			return type;
+		}
+		case "powerLiteral": {
+			const { PowerLiteral: [power] } = children;
+			return new Int32Value(power.meta.location, new Int32Array([parseSuperScript(power.image)]));
+		}
+		default: {
+			throw new Error(`CST transformation not implemented for CST node "${cst.name}"`);
+		}
 	}
 }

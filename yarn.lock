@@ -18,13 +18,17 @@ acorn-jsx@^3.0.0:
   dependencies:
     acorn "^3.0.4"
 
-acorn@4.0.4, acorn@^4.0.3, acorn@^4.0.4:
+acorn@4.0.4:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-4.0.4.tgz#17a8d6a7a6c4ef538b814ec9abac2779293bf30a"
 
 acorn@^3.0.4:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-3.3.0.tgz#45e37fb39e8da3f25baee3ff5369e2bb5f22017a"
+
+acorn@^4.0.3, acorn@^4.0.4:
+  version "4.0.11"
+  resolved "https://registry.yarnpkg.com/acorn/-/acorn-4.0.11.tgz#edcda3bd937e7556410d42ed5860f67399c794c0"
 
 ajv-keywords@^1.0.0, ajv-keywords@^1.1.1:
   version "1.5.1"
@@ -923,19 +927,6 @@ babel-preset-env@^1.2.2:
     electron-to-chromium "^1.2.6"
     invariant "^2.2.2"
 
-babel-preset-es2016@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-preset-es2016/-/babel-preset-es2016-6.22.0.tgz#b061aaa3983d40c9fbacfa3743b5df37f336156c"
-  dependencies:
-    babel-plugin-transform-exponentiation-operator "^6.22.0"
-
-babel-preset-es2017@^6.22.0:
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/babel-preset-es2017/-/babel-preset-es2017-6.22.0.tgz#de2f9da5a30c50d293fb54a0ba15d6ddc573f0f2"
-  dependencies:
-    babel-plugin-syntax-trailing-function-commas "^6.22.0"
-    babel-plugin-transform-async-to-generator "^6.22.0"
-
 babel-preset-stage-0@^6.22.0:
   version "6.22.0"
   resolved "https://registry.yarnpkg.com/babel-preset-stage-0/-/babel-preset-stage-0-6.22.0.tgz#707eeb5b415da769eff9c42f4547f644f9296ef9"
@@ -1221,8 +1212,8 @@ camelcase@^3.0.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-3.0.0.tgz#32fc4b9fcdaf845fcdf7e73bb97cac2261f0ab0a"
 
 caniuse-db@^1.0.30000631:
-  version "1.0.30000636"
-  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000636.tgz#08230e9dd26632193f29c9d935185c6f6f9fd9ef"
+  version "1.0.30000637"
+  resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000637.tgz#c02430cb29447eb561373bab360d834a2639b42c"
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -1245,9 +1236,9 @@ chalk@^1.0.0, chalk@^1.1.0, chalk@^1.1.1, chalk@^1.1.3:
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
 
-chevrotain@^0.23.0:
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/chevrotain/-/chevrotain-0.23.0.tgz#e668b1340e73356a1a151c5dc2561689bdd13456"
+chevrotain@^0.24.0:
+  version "0.24.0"
+  resolved "https://registry.yarnpkg.com/chevrotain/-/chevrotain-0.24.0.tgz#7755245406aa01ab822aa5149fdb975d677889b5"
 
 chokidar@^1.4.3:
   version "1.6.1"
@@ -1339,7 +1330,7 @@ concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
 
-concat-stream@^1.4.6:
+concat-stream@^1.5.2:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/concat-stream/-/concat-stream-1.6.0.tgz#0aac662fd52be78964d5532f694784e70110acf7"
   dependencies:
@@ -1422,12 +1413,6 @@ d@1:
   resolved "https://registry.yarnpkg.com/d/-/d-1.0.0.tgz#754bb5bfe55451da69a58b94d45f4c5b0462d58f"
   dependencies:
     es5-ext "^0.10.9"
-
-d@~0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/d/-/d-0.1.1.tgz#da184c535d18d8ee7ba2aa229b914009fae11309"
-  dependencies:
-    es5-ext "~0.10.2"
 
 dashdash@^1.12.0:
   version "1.14.1"
@@ -1525,9 +1510,9 @@ diffie-hellman@^5.0.0:
     miller-rabin "^4.0.0"
     randombytes "^2.0.0"
 
-doctrine@^1.2.2:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/doctrine/-/doctrine-1.5.0.tgz#379dce730f6166f76cefa4e6707a159b02c5a6fa"
+doctrine@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/doctrine/-/doctrine-2.0.0.tgz#c73d8d2909d22291e1a007a395804da8b665fe63"
   dependencies:
     esutils "^2.0.2"
     isarray "^1.0.0"
@@ -1627,7 +1612,7 @@ es-to-primitive@^1.1.1:
     is-date-object "^1.0.1"
     is-symbol "^1.0.1"
 
-es5-ext@^0.10.14, es5-ext@^0.10.9, es5-ext@~0.10.11, es5-ext@~0.10.14, es5-ext@~0.10.2:
+es5-ext@^0.10.14, es5-ext@^0.10.9, es5-ext@~0.10.14:
   version "0.10.14"
   resolved "https://registry.yarnpkg.com/es5-ext/-/es5-ext-0.10.14.tgz#625bc9ab9cac0f6fb9dc271525823d1800b3d360"
   dependencies:
@@ -1647,17 +1632,17 @@ es6-iterator@2, es6-iterator@^2.0.1, es6-iterator@~2.0.1:
     es6-symbol "^3.1"
 
 es6-map@^0.1.3:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/es6-map/-/es6-map-0.1.4.tgz#a34b147be224773a4d7da8072794cefa3632b897"
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/es6-map/-/es6-map-0.1.5.tgz#9136e0503dcc06a301690f0bb14ff4e364e949f0"
   dependencies:
-    d "~0.1.1"
-    es5-ext "~0.10.11"
-    es6-iterator "2"
-    es6-set "~0.1.3"
-    es6-symbol "~3.1.0"
-    event-emitter "~0.3.4"
+    d "1"
+    es5-ext "~0.10.14"
+    es6-iterator "~2.0.1"
+    es6-set "~0.1.5"
+    es6-symbol "~3.1.1"
+    event-emitter "~0.3.5"
 
-es6-set@~0.1.3:
+es6-set@~0.1.5:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/es6-set/-/es6-set-0.1.5.tgz#d2b3ec5d4d800ced818db538d28974db0a73ccb1"
   dependencies:
@@ -1667,7 +1652,7 @@ es6-set@~0.1.3:
     es6-symbol "3.1.1"
     event-emitter "~0.3.5"
 
-es6-symbol@3.1.1, es6-symbol@^3.1, es6-symbol@^3.1.1, es6-symbol@~3.1, es6-symbol@~3.1.0:
+es6-symbol@3.1.1, es6-symbol@^3.1, es6-symbol@^3.1.1, es6-symbol@~3.1, es6-symbol@~3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/es6-symbol/-/es6-symbol-3.1.1.tgz#bf00ef4fdab6ba1b46ecb7b629b4c7ed5715cc77"
   dependencies:
@@ -1704,17 +1689,18 @@ eslint-plugin-filenames@^1.1.0:
     lodash.kebabcase "4.0.1"
     lodash.snakecase "4.0.1"
 
-eslint@^3.0.0, eslint@^3.17.1:
-  version "3.17.1"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-3.17.1.tgz#b80ae12d9c406d858406fccda627afce33ea10ea"
+eslint@^3.0.0, eslint@^3.18.0:
+  version "3.18.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-3.18.0.tgz#647e985c4ae71502d20ac62c109f66d5104c8a4b"
   dependencies:
     babel-code-frame "^6.16.0"
     chalk "^1.1.3"
-    concat-stream "^1.4.6"
+    concat-stream "^1.5.2"
     debug "^2.1.1"
-    doctrine "^1.2.2"
+    doctrine "^2.0.0"
     escope "^3.6.0"
     espree "^3.4.0"
+    esquery "^1.0.0"
     estraverse "^4.2.0"
     esutils "^2.0.2"
     file-entry-cache "^2.0.0"
@@ -1754,6 +1740,12 @@ esprima@^3.1.1:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-3.1.3.tgz#fdca51cee6133895e3c88d535ce49dbff62a4633"
 
+esquery@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/esquery/-/esquery-1.0.0.tgz#cfba8b57d7fba93f17298a8a006a04cda13d80fa"
+  dependencies:
+    estraverse "^4.0.0"
+
 esrecurse@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/esrecurse/-/esrecurse-4.1.0.tgz#4713b6536adf7f2ac4f327d559e7756bff648220"
@@ -1761,7 +1753,7 @@ esrecurse@^4.1.0:
     estraverse "~4.1.0"
     object-assign "^4.0.1"
 
-estraverse@^4.1.1, estraverse@^4.2.0:
+estraverse@^4.0.0, estraverse@^4.1.1, estraverse@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-4.2.0.tgz#0dee3fed31fcd469618ce7342099fc1afa0bdb13"
 
@@ -1773,7 +1765,7 @@ esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
 
-event-emitter@~0.3.4, event-emitter@~0.3.5:
+event-emitter@~0.3.5:
   version "0.3.5"
   resolved "https://registry.yarnpkg.com/event-emitter/-/event-emitter-0.3.5.tgz#df8c69eef1647923c7157b9ce83840610b02cc39"
   dependencies:
@@ -2292,8 +2284,8 @@ homedir-polyfill@^1.0.0:
     parse-passwd "^1.0.0"
 
 hosted-git-info@^2.1.4:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.2.0.tgz#7a0d097863d886c0fabbdcd37bf1758d8becf8a5"
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.3.1.tgz#ac439421605f0beb0ea1349de7d8bb28e50be1dd"
 
 http-signature@~1.1.0:
   version "1.1.1"
@@ -3739,8 +3731,8 @@ source-list-map@~0.1.7:
   resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-0.1.8.tgz#c550b2ab5427f6b3f21f5afead88c4f5587b2106"
 
 source-map-support@^0.4.2:
-  version "0.4.13"
-  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.13.tgz#9782e6f7deb424d5f173327a1879eb46453bdcd4"
+  version "0.4.14"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.14.tgz#9d4463772598b86271b4f523f6c1f4e02a7d6aef"
   dependencies:
     source-map "^0.5.6"
 
@@ -4016,8 +4008,8 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 uglify-js@^2.7.5:
-  version "2.8.13"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.8.13.tgz#d0cdf02f3c661484fac601b7e723207b735a374c"
+  version "2.8.14"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.8.14.tgz#25b15d1af39b21752ee33703adbf432e8bc8f77d"
   dependencies:
     source-map "~0.5.1"
     uglify-to-browserify "~1.0.0"
