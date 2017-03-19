@@ -76,7 +76,7 @@ curry1(5)(8)
 curry2(5)(8)
 ```
 ### Arity checking
-If you try to invoke a function with more arguments than it can receive, chi will refuse to invoke it and instead throw a `BindError`.
+If you try to invoke a function with more arguments than it can receive, this can be detected due to static type checking and throw a `TypeError`.
 ```js
 let f = (x, y) = x * y - 3
 f(1, 2, 3)
@@ -85,5 +85,5 @@ f(1, 2, 3)
 Chi also allows certain tokens to have alternative forms. For example, the `MINUS` token can either be `Hyphen-minus`, `En Dash` or `Em Dash` (`-`, `–` and `—` respectively). Further examples how this can benefit esthetics can be seen below.
 ```js
 let y = (x, y) => 2¹⁰ · x² – y⁴
-let bool = true ∧ false ∨ true
+let formula = true ∧ false ∨ true
 ```
