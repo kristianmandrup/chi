@@ -51,3 +51,10 @@ export function run(source) {
 	}
 }
 export default run;
+export {
+	Lexer,
+	Parser,
+	transform,
+	interpret,
+	checkTypes
+};
