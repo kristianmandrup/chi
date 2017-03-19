@@ -385,21 +385,15 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			}
 		}
 		else if (type instanceof RecursiveType) {
-			if ((target instanceof Apply)) {
-				throw new Error("Not implemented");
-				// return [resultType, s1];
+			const { typeHint } = type.identifier;
+			const resultType = typeHint.image;
+			const [newType, newStore] = checkArguments(typeHint.domain, typeHint.image);
+			if (!expression.typeHint) {
+				/* TODO: Can this happen? */
+				warn("Yes, it can happen!");
+				infer(expression, resultType);
 			}
-			else {
-				const { typeHint } = type.identifier;
-				const resultType = typeHint.image;
-				const [newType, newStore] = checkArguments(typeHint.domain, typeHint.image);
-				if (!expression.typeHint) {
-					/* TODO: Can this happen? */
-					warn("Yes, it can happen!");
-					infer(expression, resultType);
-				}
-				return [newType, newStore];
-			}
+			return [newType, newStore];
 		}
 		else {
 			throw new TypeError(`Unable to invoke ${target.name ? `"${target.name}"` : "intermediate value"}, as it is of type "${toKeyword(type)}".`);
