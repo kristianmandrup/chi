@@ -11,6 +11,7 @@ import {
 	Subtract,
 	Multiply,
 	Divide,
+	Power,
 	And,
 	Or,
 	Not,
@@ -50,11 +51,16 @@ const infer = (expression, type) => {
 	expression.typeHint = type;
 };
 function toKeyword(type) {
-	return types
-		.find(x => x.TYPE === type)
-		.PATTERN
-		.toString()
-		.replace(/^\/|\/$/g, "");
+	if (type === AnyType) {
+		return type.toString();
+	}
+	else {
+		return types
+			.find(x => x.TYPE === type)
+			.PATTERN
+			.toString()
+			.replace(/^\/|\/$/g, "");
+	}
 }
 export function getGreaterDomain(left, right) {
 	const leftInt8 = left === Int8Type;
@@ -178,76 +184,74 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 	}
 	else if (expression instanceof Operator) {
 		if (expression instanceof BinaryOperator) {
+			const [left, s1] = typeOf(expression.left);
+			const [right, s2] = typeOf(expression.right, environment, s1);
+			const greaterDomain = getGreaterDomain(left, right);
+			const leftKeyword = toKeyword(left);
+			const rightKeyword = toKeyword(right);
 			if (expression instanceof And) {
-				const [left, s1] = typeOf(expression.left);
-				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (left !== BoolType || right !== BoolType) {
-					throw new TypeError(`The operator "∧" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+					throw new TypeError(`The operator "∧" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
 				}
 				else {
 					return [BoolType, s2];
 				}
 			}
 			if (expression instanceof Or) {
-				const [left, s1] = typeOf(expression.left);
-				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (left !== BoolType || right !== BoolType) {
-					throw new TypeError(`The operator "∨" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+					throw new TypeError(`The operator "∨" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
 				}
 				else {
 					return [BoolType, s2];
 				}
 			}
 			else if (expression instanceof Add) {
-				const [left, s1] = typeOf(expression.left);
-				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (left === StringType && right === StringType) {
 					infer(expression, StringType);
 					return [StringType, s2];
 				}
 				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
-					const greaterDomain = getGreaterDomain(left, right);
 					infer(expression, greaterDomain);
 					return [greaterDomain, s2];
 				}
 				else {
-					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+					throw new TypeError(`The operator "+" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
 				}
 			}
 			else if (expression instanceof Subtract) {
-				const [left, s1] = typeOf(expression.left);
-				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
-					const greaterDomain = getGreaterDomain(left, right);
 					infer(expression, greaterDomain);
 					return [greaterDomain, s2];
 				}
 				else {
-					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+					throw new TypeError(`The operator "+" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
 				}
 			}
 			else if (expression instanceof Multiply) {
-				const [left, s1] = typeOf(expression.left);
-				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
-					const greaterDomain = getGreaterDomain(left, right);
 					infer(expression, greaterDomain);
 					return [greaterDomain, s2];
 				}
 				else {
-					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+					throw new TypeError(`The operator "+" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
 				}
 			}
 			else if (expression instanceof Divide) {
-				const [left, s1] = typeOf(expression.left);
-				const [right, s2] = typeOf(expression.right, environment, s1);
 				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
-					const greaterDomain = getGreaterDomain(left, right);
 					infer(expression, greaterDomain);
 					return [greaterDomain, s2];
 				}
 				else {
-					throw new TypeError(`The operator "+" is not defined for operands of type "${toKeyword(left)}" and "${toKeyword(right)}".`);
+					throw new TypeError(`The operator "+" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
+				}
+			}
+			else if (expression instanceof Power) {
+				if (IntType.isPrototypeOf(left)) {
+					infer(expression, left);
+					return [left, s2];
+				}
+				else {
+					throw new TypeError(`The operator "**" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
 				}
 			}
 		}

@@ -50,20 +50,16 @@ export default function interpret(expression, environment = new Environment(), s
 	}
 	else if (expression instanceof Operator) {
 		if (expression instanceof BinaryOperator) {
+			const [left, s1] = π(expression.left);
+			const [right, s2] = π(expression.right, environment, s1);
+			const { typeHint } = expression;
 			if (expression instanceof And) {
-				const [left, s1] = π(expression.left);
-				const [right, s2] = π(expression.right, environment, s1);
 				return [new BoolValue(null, left.value && right.value), s2];
 			}
 			else if (expression instanceof Or) {
-				const [left, s1] = π(expression.left);
-				const [right, s2] = π(expression.right, environment, s1);
 				return [new BoolValue(null, left.value || right.value), s2];
 			}
 			else if (expression instanceof Add) {
-				const [left, s1] = π(expression.left);
-				const [right, s2] = π(expression.right, environment, s1);
-				const { typeHint } = expression;
 				if (IntType.isPrototypeOf(typeHint)) {
 					if (typeHint === Int8Type) {
 						return [Int8Value.add(left, right), s2];
@@ -80,59 +76,48 @@ export default function interpret(expression, environment = new Environment(), s
 				}
 			}
 			else if (expression instanceof Subtract) {
-				const [left, s1] = π(expression.left);
-				const [right, s2] = π(expression.right, environment, s1);
-				const { typeHint } = expression;
-				if (IntType.isPrototypeOf(typeHint)) {
-					if (typeHint === Int8Type) {
-						return [Int8Value.subtract(left, right), s2];
-					}
-					else if (typeHint === Int16Type) {
-						return [Int16Value.subtract(left, right), s2];
-					}
-					else if (typeHint === Int32Type) {
-						return [Int32Value.subtract(left, right), s2];
-					}
+				if (typeHint === Int8Type) {
+					return [Int8Value.subtract(left, right), s2];
+				}
+				else if (typeHint === Int16Type) {
+					return [Int16Value.subtract(left, right), s2];
+				}
+				else if (typeHint === Int32Type) {
+					return [Int32Value.subtract(left, right), s2];
 				}
 			}
 			else if (expression instanceof Multiply) {
-				const [left, s1] = π(expression.left);
-				const [right, s2] = π(expression.right, environment, s1);
-				const { typeHint } = expression;
-				if (IntType.isPrototypeOf(typeHint)) {
-					if (typeHint === Int8Type) {
-						return [Int8Value.multiply(left, right), s2];
-					}
-					else if (typeHint === Int16Type) {
-						return [Int16Value.multiply(left, right), s2];
-					}
-					else if (typeHint === Int32Type) {
-						return [Int32Value.multiply(left, right), s2];
-					}
+				if (typeHint === Int8Type) {
+					return [Int8Value.multiply(left, right), s2];
+				}
+				else if (typeHint === Int16Type) {
+					return [Int16Value.multiply(left, right), s2];
+				}
+				else if (typeHint === Int32Type) {
+					return [Int32Value.multiply(left, right), s2];
 				}
 			}
 			else if (expression instanceof Divide) {
-				const [left, s1] = π(expression.left);
-				const [right, s2] = π(expression.right, environment, s1);
-				const { typeHint } = expression;
-				if (IntType.isPrototypeOf(typeHint)) {
-					if (typeHint === Int8Type) {
-						return [Int8Value.divide(left, right), s2];
-					}
-					else if (typeHint === Int16Type) {
-						return [Int16Value.divide(left, right), s2];
-					}
-					else if (typeHint === Int32Type) {
-						return [Int32Value.divide(left, right), s2];
-					}
+				if (typeHint === Int8Type) {
+					return [Int8Value.divide(left, right), s2];
+				}
+				else if (typeHint === Int16Type) {
+					return [Int16Value.divide(left, right), s2];
+				}
+				else if (typeHint === Int32Type) {
+					return [Int32Value.divide(left, right), s2];
 				}
 			}
 			else if (expression instanceof Power) {
-				// const [left, s1] = π(expression.left);
-				// const [right, s2] = π(expression.right, environment, s1);
-				// const [{ value: leftValue }, { value: rightValue }] = [left, right];
-				// return [new Number(null, leftValue ** rightValue), s2];
-				throw new Error("Not implemented");
+				if (typeHint === Int8Type) {
+					return [Int8Value.power(left, right), s2];
+				}
+				else if (typeHint === Int16Type) {
+					return [Int16Value.power(left, right), s2];
+				}
+				else if (typeHint === Int32Type) {
+					return [Int32Value.power(left, right), s2];
+				}
 			}
 		}
 		else if (expression instanceof UnaryOperator) {

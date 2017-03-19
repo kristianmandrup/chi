@@ -252,7 +252,15 @@ export function transform(cst) {
 		case "block": {
 			const { statement } = children;
 			const statements = statement.map(transform);
-			return new Block(null, ...statements);
+			const [firstStatement] = statements;
+			const [lastStatement] = statements.slice(-1);
+			const start = firstStatement ? firstStatement.location.start : 0;
+			const end = lastStatement ? lastStatement.location.end : 0;
+			const location = {
+				start,
+				end
+			};
+			return new Block(location, ...statements);
 		}
 		case "statement": {
 			const { expression, letStatement } = children;
@@ -278,18 +286,17 @@ export function transform(cst) {
 			return new LetStatement(location, id, argument);
 		}
 		case "expression": {
-			const { andExpression } = children;
+			console.log(children);
+			const { LeftParenthesis: [leftParen], andExpression, RightParenthesis: [rightParen] } = children;
 			const [and, ...invocationArgs] = andExpression.map(transform);
-			const apply = [and, ...invocationArgs].reduce((r1, r2) => {
-				const { start } = r1.location;
-				const { end } = r2.location;
-				const location = {
-					start,
-					end
-				};
-				return new Apply(location, r1, r2)
-			});
-			return invocationArgs.length ? apply : and;
+			const { start } = leftParen ? leftParen.meta.location : and.location;
+			const [lastArgument] = invocationArgs.slice(-1);
+			const { end } = rightParen ? rightParen.meta.location : lastArgument ? lastArgument.location : and.location;
+			const location = {
+				start,
+				end
+			};
+			return !invocationArgs.length ? and : new Apply(location, and, ...invocationArgs);
 		}
 		case "andExpression": {
 			const { orExpression } = children;

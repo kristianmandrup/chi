@@ -87,7 +87,7 @@ export class FunctionExpression extends Expression {
 	}
 }
 export class Apply extends Expression {
-	constructor(location, target, args) {
+	constructor(location, target, ...args) {
 		super(location);
 		this.target = target;
 		this.args = args;
@@ -137,6 +137,9 @@ export class IntValue extends NumberValue {
 	}
 	static divide(left, right) {
 		return this.compute(left, right, (x, y) => x.number / y.number);
+	}
+	static power(left, right) {
+		return this.compute(left, right, (x, y) => x.number ** y.number);
 	}
 	inspect() {
 		let hint;
