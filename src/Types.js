@@ -74,7 +74,7 @@ export class BoolType extends AnyType {
 		return this.inspect();
 	}
 }
-export class VoidType {
+export class VoidType extends Type {
 	static inspect() {
 		return "void";
 	}

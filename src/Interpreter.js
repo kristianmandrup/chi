@@ -11,7 +11,9 @@ import {
 	Multiply,
 	Divide,
 	Power,
-	Let,
+	ModuloExpression,
+	RemainderExpression,
+	LetStatement,
 	Int8Value,
 	Int16Value,
 	Int32Value,
@@ -24,7 +26,8 @@ import {
 	And,
 	Or,
 	Not,
-	Cast
+	Cast,
+	Program
 } from "./InterpreterClasses";
 import {
 	IntType,
@@ -38,16 +41,26 @@ export default function interpret(expression, environment = new Environment(), s
 	if (expression instanceof Value) {
 		return [expression, store];
 	}
-	else if (expression instanceof Block) {
-		const { content } = expression;
+	else if (expression instanceof Program) {
+		const { body } = expression;
 		let result, s = store;
-		for (const expression of content) {
+		for (const expression of body) {
 			const [value, newStore] = π(expression, environment, s);
 			result = value;
 			s = newStore;
 		}
 		return [result, s];
 	}
+	// else if (expression instanceof Block) {
+	// 	const { content } = expression;
+	// 	let result, s = store;
+	// 	for (const expression of content) {
+	// 		const [value, newStore] = π(expression, environment, s);
+	// 		result = value;
+	// 		s = newStore;
+	// 	}
+	// 	return [result, s];
+	// }
 	else if (expression instanceof Operator) {
 		if (expression instanceof BinaryOperator) {
 			const [left, s1] = π(expression.left);
@@ -119,6 +132,28 @@ export default function interpret(expression, environment = new Environment(), s
 					return [Int32Value.power(left, right), s2];
 				}
 			}
+			else if (expression instanceof ModuloExpression) {
+				if (typeHint === Int8Type) {
+					return [Int8Value.mod(left, right), s2];
+				}
+				else if (typeHint === Int16Type) {
+					return [Int16Value.mod(left, right), s2];
+				}
+				else if (typeHint === Int32Type) {
+					return [Int32Value.mod(left, right), s2];
+				}
+			}
+			else if (expression instanceof RemainderExpression) {
+				if (typeHint === Int8Type) {
+					return [Int8Value.remainder(left, right), s2];
+				}
+				else if (typeHint === Int16Type) {
+					return [Int16Value.remainder(left, right), s2];
+				}
+				else if (typeHint === Int32Type) {
+					return [Int32Value.remainder(left, right), s2];
+				}
+			}
 		}
 		else if (expression instanceof UnaryOperator) {
 			if (expression instanceof Not) {
@@ -184,14 +219,21 @@ export default function interpret(expression, environment = new Environment(), s
 			return π(body, newEnvironment, argStore);
 		}
 	}
-	else if (expression instanceof Let) {
-		const { identifier, expression: boundExpression } = expression;
-		const { name } = identifier;
-		const [value, s1] = π(boundExpression);
-		const newStore = new Store(s1);
-		const location = environment.set(name, newStore.nextLocation);
-		newStore.set(location, value);
-		return [value, newStore];
+	else if (expression instanceof LetStatement) {
+		const { bindings } = expression;
+		let v;
+		let s = store;
+		for (const [identifier, boundExpression] of bindings) {
+			const { name } = identifier;
+			const [value, s1] = π(boundExpression, s);
+			/* Update value and store */
+			v = value;
+			const newStore = new Store(s1);
+			const location = environment.set(name, newStore.nextLocation);
+			newStore.set(location, value);
+			s = newStore;
+		}
+		return [v, s];
 	}
 	else if (expression instanceof Id) {
 		const { name } = expression;

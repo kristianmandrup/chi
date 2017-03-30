@@ -1,4 +1,4 @@
-import { Lexer, LazyToken as Token } from "chevrotain";
+import { Lexer, Token } from "chevrotain";
 import { err } from "print-log";
 import {
 	Int8Type as i8,
@@ -9,37 +9,29 @@ import {
 	RecursiveType as infinity
 } from "./Types";
 const { SKIPPED, NA } = Lexer;
-export class MetaToken extends Token {
-	get meta() {
-		return {
-			name: this.image,
-			location: {
-				start: {
-					line: this.startLine,
-					column: this.startColumn
-				},
-				end: {
-					line: this.endLine,
-					column: this.endColumn
-				}
-			}
-		};
-	}
-}
-export class Identifier extends MetaToken {
+export class Identifier extends Token {
 	static PATTERN = /[a-zA-Z]\w*/;
 }
-export class Colon extends MetaToken {
+export class Colon extends Token {
 	static PATTERN = /:/;
 }
-export class AdditiveOperator extends MetaToken {
+export class AdditiveOperator extends Token {
 	static PATTERN = NA;
 }
-export class MultiplicativeOperator extends MetaToken {
+export class MultiplicativeOperator extends Token {
 	static PATTERN = NA;
 }
-export class Comma extends MetaToken {
+export class Comma extends Token {
 	static PATTERN = /,/;
+}
+export class BitwiseOrOperator extends Token {
+	static PATTERN = /\|/;
+}
+export class BitwiseXorOperator extends Token {
+	static PATTERN = /\^/;
+}
+export class BitwiseAndOperator extends Token {
+	static PATTERN = /&/;
 }
 export class Plus extends AdditiveOperator {
 	static PATTERN = /\+/;
@@ -47,52 +39,61 @@ export class Plus extends AdditiveOperator {
 export class Minus extends AdditiveOperator {
 	static PATTERN = /-|–|—/;
 }
+export class ExponentiationOperator extends Token {
+	static PATTERN = /\*\*/;
+}
 export class Asterisk extends MultiplicativeOperator {
 	static PATTERN = /\*|·|×/;
 }
 export class Slash extends MultiplicativeOperator {
 	static PATTERN = /\//;
 }
-export class AndOperator extends MetaToken {
+export class RemainderOperator extends MultiplicativeOperator {
+	static PATTERN = /%/;
+}
+export class ModuloOperator extends MultiplicativeOperator {
+	static PATTERN = /mod/;
+}
+export class AndOperator extends Token {
 	static PATTERN = /&&|∧/;
 }
-export class OrOperator extends MetaToken {
+export class OrOperator extends Token {
 	static PATTERN = /\|\||∨/;
 }
-export class NotOperator extends MetaToken {
+export class NotOperator extends Token {
 	static PATTERN = /¬|!/;
 }
-export class PowerLiteral extends MetaToken {
+export class PowerLiteral extends Token {
 	static PATTERN = /[⁰¹²³⁴⁵⁶⁷⁸⁹]+/;
 }
-export class LeftBrace extends MetaToken {
+export class LeftCurlyBrace extends Token {
 	static PATTERN = /{/;
 }
-export class RightBrace extends MetaToken {
+export class RightCurlyBrace extends Token {
 	static PATTERN = /}/;
 }
-export class LeftParenthesis extends MetaToken {
+export class LeftParenthesis extends Token {
 	static PATTERN = /\(/;
 }
-export class RightParenthesis extends MetaToken {
+export class RightParenthesis extends Token {
 	static PATTERN = /\)/;
 }
-export class LeftBracket extends MetaToken {
+export class LeftSquareBracket extends Token {
 	static PATTERN = /\[/;
 }
-export class RightBracket extends MetaToken {
+export class RightSquareBracket extends Token {
 	static PATTERN = /\]/;
 }
-export class Literal extends MetaToken {
+export class Literal extends Token {
 	static PATTERN = NA;
 }
-export class BooleanLiteral extends Literal {
+export class BoolLiteral extends Literal {
 	static PATTERN = NA;
 }
-export class TrueLiteral extends BooleanLiteral {
+export class TrueLiteral extends BoolLiteral {
 	static PATTERN = /true/;
 }
-export class FalseLiteral extends BooleanLiteral {
+export class FalseLiteral extends BoolLiteral {
 	static PATTERN = /false/;
 }
 export class NumberLiteral extends Literal {
@@ -101,16 +102,16 @@ export class NumberLiteral extends Literal {
 export class StringLiteral extends Literal {
 	static PATTERN = /([\"])(?:\\\1|.)*?\1/;
 }
-export class Semicolon extends MetaToken {
+export class Semicolon extends Token {
 	static PATTERN = /;/;
 }
-export class Equals extends MetaToken {
+export class Equals extends Token {
 	static PATTERN = /=/;
 }
-export class FatArrow extends MetaToken {
+export class FatArrow extends Token {
 	static PATTERN = /=>/;
 }
-export class Keyword extends MetaToken {
+export class Keyword extends Token {
 	static PATTERN = NA;
 	static LONGER_ALT = Identifier;
 }
@@ -159,20 +160,23 @@ export class TypeRecursive extends Type {
 	static PATTERN = /infinity/;
 	static TYPE = infinity;
 }
-export class Whitespace extends MetaToken {
+export class Whitespace extends Token {
 	static PATTERN = /\s+/;
 	static GROUP = SKIPPED;
 }
 export const allTokens = [
 	Whitespace,
-	LeftBrace,
-	RightBrace,
+	LeftCurlyBrace,
+	RightCurlyBrace,
 	LeftParenthesis,
 	RightParenthesis,
-	LeftBracket,
-	RightBracket,
+	LeftSquareBracket,
+	RightSquareBracket,
 	Literal,
-	BooleanLiteral,
+	BoolLiteral,
+	BitwiseOrOperator,
+	BitwiseXorOperator,
+	BitwiseAndOperator,
 	AndOperator,
 	OrOperator,
 	NotOperator,
@@ -181,12 +185,15 @@ export const allTokens = [
 	NumberLiteral,
 	StringLiteral,
 	PowerLiteral,
+	ExponentiationOperator,
 	AdditiveOperator,
 	Plus,
 	Minus,
 	MultiplicativeOperator,
 	Asterisk,
 	Slash,
+	RemainderOperator,
+	ModuloOperator,
 	Semicolon,
 	Colon,
 	FatArrow,

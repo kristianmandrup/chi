@@ -31,6 +31,12 @@ export class Locatable {
 		this.location = location;
 	}
 }
+export class Program extends Locatable {
+	constructor(location, body) {
+		super(location);
+		this.body = body;
+	}
+}
 export class Block extends Locatable {
 	constructor(location, ...content) {
 		super(location);
@@ -66,17 +72,23 @@ export class UnaryOperator extends Operator {
 }
 export class And extends BinaryOperator {}
 export class Or extends BinaryOperator {}
+export class LogicalAnd extends BinaryOperator {}
+export class LogicalOr extends BinaryOperator {}
+export class BitwiseOr extends BinaryOperator {}
+export class BitwiseXor extends BinaryOperator {}
+export class BitwiseAnd extends BinaryOperator {}
 export class Not extends UnaryOperator {}
 export class Add extends BinaryOperator {}
 export class Subtract extends BinaryOperator {}
 export class Multiply extends BinaryOperator {}
 export class Divide extends BinaryOperator {}
+export class RemainderExpression extends BinaryOperator {}
+export class ModuloExpression extends BinaryOperator {}
 export class Power extends BinaryOperator {}
-export class Let extends Statement {
-	constructor(location, identifier, expression) {
+export class LetStatement extends Statement {
+	constructor(location, bindings) {
 		super(location);
-		this.identifier = identifier;
-		this.expression = expression;
+		this.bindings = bindings;
 	}
 }
 export class FunctionExpression extends Expression {
@@ -140,6 +152,12 @@ export class IntValue extends NumberValue {
 	}
 	static power(left, right) {
 		return this.compute(left, right, (x, y) => x.number ** y.number);
+	}
+	static mod(left, right) {
+		return this.compute(left, right, (x, y) => ((x.number % y.number) + y.number) % y.number);
+	}
+	static remainder(left, right) {
+		return this.compute(left, right, (x, y) => x.number % y.number);
 	}
 	inspect() {
 		let hint;

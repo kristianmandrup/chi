@@ -2,7 +2,7 @@ import { debug, err, warn } from "print-log";
 import { ReferenceError } from "./Error";
 import {
 	Block,
-	Let,
+	LetStatement,
 	Id,
 	Operator,
 	BinaryOperator,
@@ -11,6 +11,8 @@ import {
 	Subtract,
 	Multiply,
 	Divide,
+	ModuloExpression,
+	RemainderExpression,
 	Power,
 	And,
 	Or,
@@ -27,7 +29,8 @@ import {
 	BoolValue,
 	FunctionExpression,
 	Apply,
-	Cast
+	Cast,
+	Program
 } from "./InterpreterClasses";
 import {
 	IntType,
@@ -133,53 +136,55 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 		}
 		return false;
 	}
-	if (expression instanceof Block) {
-		const { content } = expression;
+	if (expression instanceof Program) {
+		const { body } = expression;
 		let result, s = store;
-		for (const expression of content) {
+		for (const expression of body) {
 			const [type, newStore] = typeOf(expression, environment, s);
 			result = type;
 			s = newStore;
 		}
 		return [result, s];
 	}
-	else if (expression instanceof Let) {
-		const { identifier, expression: boundExpression } = expression;
-		const { name } = identifier;
-		const { typeHint } = identifier;
-		try {
-			const [type, s1] = typeOf(boundExpression);
-			if (typeHint && type !== typeHint) {
-				throw new TypeError(`Tried to declare "${identifier.name}" with type "${toKeyword(typeHint)}", but bound to a value of type "${toKeyword(type)}"`);
-			}
-			else {
-				if (!identifier.typeHint) {
-					infer(identifier, type);
+	else if (expression instanceof LetStatement) {
+		/* TODO: Multiple bindings → Multiple stores! */
+		const { bindings } = expression;
+		for (const [identifier, boundExpression] of bindings) {
+			const { name, typeHint } = identifier;
+			try {
+				const [type, s1] = typeOf(boundExpression);
+				if (typeHint && type !== typeHint) {
+					throw new TypeError(`Tried to declare "${identifier.name}" with type "${toKeyword(typeHint)}", but bound to a value of type "${toKeyword(type)}"`);
 				}
-				const newStore = new Store(s1);
-				const location = environment.set(name, newStore.nextLocation);
-				newStore.set(location, type);
-				return [type, newStore];
-			}
-		}
-		catch (e) {
-			if (e instanceof ReferenceError) {
-				/* Did the user try to use a reference to the same variable? */
-				if (e.reference === name) {
-					if (boundExpression instanceof FunctionExpression) {
-						/* Functions may lazily refer to themselves */
-						const location = environment.set(name, store.nextLocation);
-						store.set(location, new RecursiveType(identifier));
-						const [type, s1] = typeOf(boundExpression);
+				else {
+					if (!identifier.typeHint) {
 						infer(identifier, type);
-						return [type, s1];
 					}
-					else {
-						throw new ReferenceError(name, `Can not use an undeclared reference for "${name}" within its own definition`);
-					}
+					const newStore = new Store(s1);
+					const location = environment.set(name, newStore.nextLocation);
+					newStore.set(location, type);
+					return [type, newStore];
 				}
 			}
-			throw e;
+			catch (e) {
+				if (e instanceof ReferenceError) {
+					/* Did the user try to use a reference to the same variable? */
+					if (e.reference === name) {
+						if (boundExpression instanceof FunctionExpression) {
+							/* Functions may lazily refer to themselves */
+							const location = environment.set(name, store.nextLocation);
+							store.set(location, new RecursiveType(identifier));
+							const [type, s1] = typeOf(boundExpression);
+							infer(identifier, type);
+							return [type, s1];
+						}
+						else {
+							throw new ReferenceError(name, `Can not use an undeclared reference for "${name}" within its own definition`);
+						}
+					}
+				}
+				throw e;
+			}
 		}
 	}
 	else if (expression instanceof Operator) {
@@ -197,7 +202,7 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 					return [BoolType, s2];
 				}
 			}
-			if (expression instanceof Or) {
+			else if (expression instanceof Or) {
 				if (left !== BoolType || right !== BoolType) {
 					throw new TypeError(`The operator "∨" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
 				}
@@ -254,6 +259,25 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 					throw new TypeError(`The operator "**" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
 				}
 			}
+			else if (expression instanceof ModuloExpression) {
+				console.log("yes")
+				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
+					infer(expression, greaterDomain);
+					return [greaterDomain, s2];
+				}
+				else {
+					throw new TypeError(`The operator "mod" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
+				}
+			}
+			else if (expression instanceof RemainderExpression) {
+				if (IntType.isPrototypeOf(left) && IntType.isPrototypeOf(right)) {
+					infer(expression, greaterDomain);
+					return [greaterDomain, s2];
+				}
+				else {
+					throw new TypeError(`The operator "%" is not defined for operands of type "${leftKeyword}" and "${rightKeyword}".`);
+				}
+			}
 		}
 		if (expression instanceof UnaryOperator) {
 			if (expression instanceof Not) {
@@ -302,10 +326,19 @@ const getTypeOf = (expression, environment = new Environment(), store = new Stor
 			const location = newEnv.set(name, store.nextLocation);
 			store.set(location, AnyType);
 		}
-		const [image] = typeOf(body, newEnv);
+		let image, s = store;
+		if (body.find(x => Array.isArray(x) && !x.length)) {
+			/* No statements */
+			image = VoidType;
+		}
+		else {
+			for (const statement of body) {
+				[image, s] = typeOf(statement, newEnv, s);
+			}
+		}
 		const type = new FunctionType(domain, image);
 		infer(expression, type);
-		return [type, store];
+		return [type, s];
 	}
 	else if (expression instanceof Apply) {
 		const { target, args } = expression;
