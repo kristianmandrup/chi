@@ -1,0 +1,6 @@
+let curry1 = x => y => x + y
+let curry2 = (x, y) => x + y
+curry1(5, 8)
+curry2(5, 8)
+curry1(5)(8)
+curry2(5)(8)

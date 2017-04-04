@@ -1,14 +1,16 @@
 import path from "path";
 import webpack from "webpack";
-import BabiliPlugin from "babili-webpack-plugin";
+// import BabiliPlugin from "babili-webpack-plugin";
 const SOURCE = path.join(__dirname, "src");
 const DESTINATION = path.join(__dirname, "dist");
-const { NODE_ENV } = process.env;
+const {
+	NODE_ENV
+} = process.env;
 const isDebug = NODE_ENV === "development";
 const commonOutput = {
 	path: DESTINATION,
 	filename: "[name].js"
-}
+};
 const common = {
 	cache: true,
 	devtool: isDebug ? "inline-sourcemap" : false,

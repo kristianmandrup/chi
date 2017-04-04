@@ -8,7 +8,16 @@ In order to try it out, run:
 $ npm i
 $ node dist/cli <chi-file>
 ```
+
 This will tokenize the file `<chi-file>` and then parse, type-check and interpret it.
+
+Some example to try:
+
+```bash
+$ node dist/cli examples/add.chi
+$ node dist/cli examples/curry.chi
+$ node dist/cli examples/fun.chi
+```
 
 **Please do not use chi in production yet. It's still highly experimental and will likely change a lot.**
 ## About chi

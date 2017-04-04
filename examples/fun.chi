@@ -1,0 +1,7 @@
+let identity = x => x
+let identity2 = (x) => x
+let sum1 = (a, b) => a + b
+let sum2 = (a, b) => {
+	let sum = a + b
+	sum
+}
